@@ -1,0 +1,11 @@
+/* =========================================================
+   TAXPAL APP SHELL
+   Keep this file minimal.
+   Feature-specific styling belongs inside each feature.
+   ========================================================= */
+
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100%;
+}
