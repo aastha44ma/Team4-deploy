@@ -33,17 +33,17 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Initialize theme from localStorage
-    const savedTheme = localStorage.getItem('theme');
+    // Initialize theme from localStorage (guard for server-side rendering)
+    const savedTheme = (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.getItem === 'function') ? window.localStorage.getItem('theme') : null;
     if (savedTheme === 'light') {
       this.isLightTheme = true;
-      document.body.classList.add('light-theme');
+      if (typeof document !== 'undefined') document.body.classList.add('light-theme');
     } else {
       this.isLightTheme = false;
-      document.body.classList.remove('light-theme');
+      if (typeof document !== 'undefined') document.body.classList.remove('light-theme');
     }
 
-    const userStr = localStorage.getItem('user');
+    const userStr = (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.getItem === 'function') ? window.localStorage.getItem('user') : null;
     if (userStr) {
       try {
         const user = JSON.parse(userStr);
@@ -59,15 +59,19 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   toggleTheme() {
     this.isLightTheme = !this.isLightTheme;
     if (this.isLightTheme) {
-      document.body.classList.add('light-theme');
-      localStorage.setItem('theme', 'light');
+      if (typeof document !== 'undefined') document.body.classList.add('light-theme');
+      if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.setItem === 'function') window.localStorage.setItem('theme', 'light');
     } else {
-      document.body.classList.remove('light-theme');
-      localStorage.setItem('theme', 'dark');
+      if (typeof document !== 'undefined') document.body.classList.remove('light-theme');
+      if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.setItem === 'function') window.localStorage.setItem('theme', 'dark');
     }
   }
 
   ngAfterViewInit() {
+    if (typeof document === 'undefined') {
+      return;
+    }
+
     if (this.expenseCategories.length > 0) {
       this.renderSpendingChart();
     }
@@ -104,8 +108,10 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         this.isLoading = false;
         console.error('Error loading transactions:', err);
         if (err.status === 401) {
-          localStorage.removeItem('user');
-          localStorage.removeItem('accessToken');
+          if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.removeItem === 'function') {
+            window.localStorage.removeItem('user');
+            window.localStorage.removeItem('accessToken');
+          }
           this.router.navigate(['/']);
         } else {
           this.errorMessage = 'Failed to load transaction data. Please try again.';
@@ -330,8 +336,10 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   }
 
   logout() {
-    localStorage.removeItem('user');
-    localStorage.removeItem('accessToken');
+    if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.removeItem === 'function') {
+      window.localStorage.removeItem('user');
+      window.localStorage.removeItem('accessToken');
+    }
     this.router.navigate(['/']);
   }
 }
