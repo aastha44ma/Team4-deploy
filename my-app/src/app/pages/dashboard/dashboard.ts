@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api';
@@ -29,7 +29,8 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private api: ApiService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -52,8 +53,10 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         console.error('Error parsing user storage:', e);
       }
     }
-    this.loadTransactions();
-    this.loadChartData();
+    setTimeout(() => {
+      this.loadTransactions();
+      this.loadChartData();
+    }, 0);
   }
 
   toggleTheme() {
@@ -90,6 +93,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   loadTransactions() {
     this.isLoading = true;
     this.errorMessage = '';
+    this.cdr.detectChanges();
     this.api.getTransactions().subscribe({
       next: (res: any) => {
         this.isLoading = false;
@@ -99,6 +103,7 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
           this.transactions = [];
         }
         this.calculateMetrics();
+        this.cdr.detectChanges();
         // Re-render charts after transactions loaded
         setTimeout(() => {
           this.renderIncomeExpenseChart();
@@ -116,12 +121,14 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
         } else {
           this.errorMessage = 'Failed to load transaction data. Please try again.';
         }
+        this.cdr.detectChanges();
       }
     });
   }
 
   loadChartData() {
     this.isLoadingChart = true;
+    this.cdr.detectChanges();
     this.api.getTransactions().subscribe({
       next: (res: any) => {
         this.isLoadingChart = false;
@@ -140,14 +147,18 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
             amount
           }));
 
+          this.cdr.detectChanges();
+
           setTimeout(() => {
             this.renderSpendingChart();
           }, 100);
         }
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.isLoadingChart = false;
         console.error('Error loading chart data:', err);
+        this.cdr.detectChanges();
       }
     });
   }
