@@ -1,0 +1,22 @@
+const express = require("express");
+
+const app = express();
+
+// Middleware
+app.use(express.json());
+
+// Routes
+const authRoutes = require("./routes/auth.routes");
+const userRoutes = require("./routes/user.routes");
+const transactionRoutes = require("./routes/transaction.routes");
+
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/transactions", transactionRoutes);
+
+// Test Route
+app.get("/", (req, res) => {
+    res.send("🚀 TaxPal Backend API is Running...");
+});
+
+module.exports = app;
