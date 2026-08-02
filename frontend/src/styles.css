@@ -3,6 +3,35 @@
    Global styles only
    ========================================================= */
 
+/* ---------- THEME TOKENS ---------- */
+
+:root {
+  color-scheme: dark;
+
+  --bg-primary: #0b1020;
+  --bg-secondary: #11182b;
+  --bg-tertiary: #161d33;
+  --text-primary: #eef2ff;
+  --text-secondary: #c6d0eb;
+  --text-muted: #8c97b5;
+  --border-color: rgba(148, 163, 184, 0.16);
+  --card-border: rgba(148, 163, 184, 0.12);
+}
+
+body.light-theme {
+  color-scheme: light;
+
+  --bg-primary: #f4f7fb;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-color: rgba(15, 23, 42, 0.1);
+  --card-border: rgba(15, 23, 42, 0.08);
+}
+
+
 /* ---------- RESET ---------- */
 
 *,
@@ -42,6 +71,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+
 /* ---------- ROOT ---------- */
 
 app-root {
@@ -49,6 +79,7 @@ app-root {
   width: 100%;
   min-height: 100%;
 }
+
 
 /* ---------- MEDIA ---------- */
 
@@ -59,6 +90,7 @@ video {
   max-width: 100%;
 }
 
+
 /* ---------- FORM ELEMENTS ---------- */
 
 button,
@@ -68,11 +100,13 @@ textarea {
   font: inherit;
 }
 
+
 /* ---------- LINKS ---------- */
 
 a {
   color: inherit;
 }
+
 
 /* ---------- BUTTON ---------- */
 
@@ -80,12 +114,14 @@ button {
   border: 0;
 }
 
+
 /* ---------- ACCESSIBILITY ---------- */
 
 :focus-visible {
   outline: 3px solid rgba(22, 163, 74, 0.25);
   outline-offset: 2px;
 }
+
 
 /* ---------- REDUCED MOTION ---------- */
 
