@@ -14,6 +14,7 @@ const taxRoutes = require("./routes/tax.routes");
 const reportRoutes = require("./routes/report.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const errorHandler = require("./middleware/error.middleware");
+const exportRoutes = require("./routes/export.routes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
@@ -22,6 +23,7 @@ app.use("/api/budgets", budgetRoutes);
 app.use("/api/tax-estimates", taxRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/export", exportRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
