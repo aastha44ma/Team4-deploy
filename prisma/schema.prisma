@@ -50,6 +50,8 @@ model Budget {
 
 model TaxEstimate {
   id             Int      @id @default(autoincrement())
+
+  annualIncome   Float
   quarter        String
   estimatedTax   Float
 
