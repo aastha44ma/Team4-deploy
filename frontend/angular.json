@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "my-app": {
+    "TaxPal": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -65,10 +65,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "my-app:build:production"
+              "buildTarget": "TaxPal:build:production"
             },
             "development": {
-              "buildTarget": "my-app:build:development"
+              "buildTarget": "TaxPal:build:development"
             }
           },
           "defaultConfiguration": "development"
