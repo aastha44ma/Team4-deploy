@@ -13,6 +13,7 @@ const budgetRoutes = require("./routes/budget.routes");
 const taxRoutes = require("./routes/tax.routes");
 const reportRoutes = require("./routes/report.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
+const errorHandler = require("./middleware/error.middleware");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
@@ -27,4 +28,12 @@ app.get("/", (req, res) => {
     res.send("🚀 TaxPal Backend API is Running...");
 });
 
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route Not Found",
+  });
+});
+// Error Handler (LAST)
+app.use(errorHandler);
 module.exports = app;

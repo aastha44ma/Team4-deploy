@@ -1,8 +1,7 @@
 const prisma = require("../config/prisma");
 
-// ==============================
 // Dashboard
-// ==============================
+
 const getDashboard = async (req, res) => {
   try {
     const userId = req.user.userId;

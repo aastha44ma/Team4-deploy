@@ -1,40 +1,42 @@
-// Dummy Database
-const users = [
-    {
-        id: 1,
-        name: "Roshan Kumar",
-        email: "roshan@gmail.com"
-    },
-    {
-        id: 2,
-        name: "Rahul",
-        email: "rahul@gmail.com"
+const prisma = require("../config/prisma");
+
+const getUserProfile = async (req, res) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: {
+                id: req.user.userId
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                country: true,
+                incomeBracket: true
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            user
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
     }
-];
-
-// GET Users
-const getUsers = (req, res) => {
-    res.json(users);
-};
-
-// POST User
-const createUser = (req, res) => {
-
-    const newUser = {
-        id: users.length + 1,
-        name: req.body.name,
-        email: req.body.email
-    };
-
-    users.push(newUser);
-
-    res.status(201).json({
-        message: "User Created Successfully",
-        user: newUser
-    });
 };
 
 module.exports = {
-    getUsers,
-    createUser
+    getUserProfile
 };

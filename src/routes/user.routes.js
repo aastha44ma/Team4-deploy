@@ -2,13 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const authenticateUser = require("../middleware/auth.middleware");
+const { getUserProfile } = require("../controllers/userController");
 
-router.get("/profile", authenticateUser, (req, res) => {
-    return res.status(200).json({
-        success: true,
-        message: "Protected Route Accessed Successfully",
-        user: req.user
-    });
-});
+router.get("/profile", authenticateUser, getUserProfile);
 
 module.exports = router;
