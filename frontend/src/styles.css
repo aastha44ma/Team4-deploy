@@ -1,0 +1,26 @@
+/* Global theme tokens used by the dashboard */
+:root {
+	color-scheme: dark;
+	--bg-primary: #0b1020;
+	--bg-secondary: #11182b;
+	--bg-tertiary: #161d33;
+	--text-primary: #eef2ff;
+	--text-secondary: #c6d0eb;
+	--text-muted: #8c97b5;
+	--border-color: rgba(148, 163, 184, 0.16);
+	--card-border: rgba(148, 163, 184, 0.12);
+}
+
+body.light-theme {
+	color-scheme: light;
+	--bg-primary: #f4f7fb;
+	--bg-secondary: #ffffff;
+	--bg-tertiary: #ffffff;
+	--text-primary: #0f172a;
+	--text-secondary: #475569;
+	--text-muted: #64748b;
+	--border-color: rgba(15, 23, 42, 0.1);
+	--card-border: rgba(15, 23, 42, 0.08);
+}
+
+/* You can add global styles to this file, and also import other style files */
