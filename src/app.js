@@ -9,10 +9,12 @@ app.use(express.json());
 const authRoutes = require("./routes/auth.routes");
 const userRoutes = require("./routes/user.routes");
 const transactionRoutes = require("./routes/transaction.routes");
+const budgetRoutes = require("./routes/budget.routes");
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/transactions", transactionRoutes);
+app.use("/api/budgets", budgetRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
