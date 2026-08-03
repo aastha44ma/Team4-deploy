@@ -251,18 +251,3 @@ Authorization: Bearer <your_token>
 
 ---
 
-# 👨‍💻 Team
-
-Backend Developer
-
-**Roshan Kumar**
-
----
-
-# 📄 License
-
-This project is developed for educational purposes as part of a BCA Major Project.
-
----
-
-## ⭐ If you like this project, don't forget to give it a Star!
