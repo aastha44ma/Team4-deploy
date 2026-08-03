@@ -15,10 +15,11 @@ Module B: Categorization & Budgeting.
 Module C: Tax Estimation Engine.
 Module D: Reporting & Export. 
 
-# 💰 TaxPal Backend
+# 💰 TaxPal
 
-A secure and scalable RESTful API for **TaxPal – Personal Finance & Tax Estimator for Freelancers**.  
-Built with **Node.js, Express.js, Prisma ORM, MySQL, and JWT Authentication**.
+A full-stack app for **TaxPal – Personal Finance & Tax Estimator for Freelancers**, made up of:
+- **Backend** — a secure RESTful API built with **Node.js, Express.js, Prisma ORM, and JWT Authentication**
+- **Frontend** — an **Angular (SSR)** single-page app that consumes the API
 
 ---
 
@@ -70,39 +71,98 @@ Built with **Node.js, Express.js, Prisma ORM, MySQL, and JWT Authentication**.
 - Global Error Middleware
 - Custom 404 Handler
 
+### 🖥️ Frontend (Angular)
+- Login / Register page
+- Dashboard with financial overview
+- Income tracking page
+- Expense tracking page
+- Transactions page
+- Server-Side Rendering (Angular SSR / Express)
+
 ---
 
 # 🛠 Tech Stack
 
+**Backend**
 - Node.js
-- Express.js
+- Express.js 5
 - Prisma ORM
-- MySQL
-- JWT Authentication
+- JWT Authentication (jsonwebtoken)
 - bcrypt
 - Zod
 - PDFKit
 - json2csv
+
+**Frontend**
+- Angular 22 (standalone components, SSR)
+- Chart.js
+- RxJS
+- TypeScript
 
 ---
 
 # 📁 Project Structure
 
 ```
-taxpal-backend
+Team4-TaxPal-Personal-Finance-Tax-Estimator-for-Freelancers-
 │
-├── prisma/
+├── prisma/                          # Prisma schema & migrations
+│   ├── migrations/
+│   └── schema.prisma
 │
-├── src/
+├── src/                             # Backend source
 │   ├── config/
+│   │   └── prisma.js
 │   ├── controllers/
+│   │   ├── auth.controller.js
+│   │   ├── budget.controller.js
+│   │   ├── dashboard.controller.js
+│   │   ├── export.controller.js
+│   │   ├── report.controller.js
+│   │   ├── tax.controller.js
+│   │   ├── transaction.controller.js
+│   │   └── userController.js
 │   ├── middleware/
+│   │   ├── auth.middleware.js
+│   │   ├── error.middleware.js
+│   │   └── validate.middleware.js
 │   ├── routes/
+│   │   ├── auth.routes.js
+│   │   ├── budget.routes.js
+│   │   ├── dashboard.routes.js
+│   │   ├── export.routes.js
+│   │   ├── report.routes.js
+│   │   ├── tax.routes.js
+│   │   ├── transaction.routes.js
+│   │   └── user.routes.js
 │   ├── validations/
-│   ├── docs/
+│   │   └── auth.validation.js
 │   └── app.js
 │
-├── server.js
+├── frontend/                        # Angular SSR frontend
+│   ├── public/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── pages/
+│   │   │   │   ├── auth/
+│   │   │   │   ├── dashboard/
+│   │   │   │   ├── expense/
+│   │   │   │   ├── income/
+│   │   │   │   └── transactions/
+│   │   │   ├── services/
+│   │   │   │   └── api.ts
+│   │   │   ├── app.config.ts
+│   │   │   ├── app.routes.ts
+│   │   │   └── app.ts
+│   │   ├── main.ts
+│   │   ├── main.server.ts
+│   │   └── server.ts
+│   ├── angular.json
+│   ├── mock-server.js
+│   └── package.json
+│
+├── server.js                        # Backend entry point
+├── prisma.config.ts
 ├── package.json
 └── README.md
 ```
@@ -115,21 +175,18 @@ Clone the repository
 
 ```bash
 git clone <repository-url>
+cd Team4-TaxPal-Personal-Finance-Tax-Estimator-for-Freelancers-
 ```
 
-Move into project
+## Backend setup
 
-```bash
-cd taxpal-backend
-```
-
-Install dependencies
+Install dependencies (run from the project root)
 
 ```bash
 npm install
 ```
 
-Create a `.env` file
+Create a `.env` file in the project root
 
 ```env
 DATABASE_URL="your_database_url"
@@ -151,17 +208,41 @@ Generate Prisma Client
 npx prisma generate
 ```
 
-Start Server
+Start the backend server
+
+```bash
+node server.js
+```
+
+Development mode (auto-restart with nodemon)
+
+```bash
+npx nodemon server.js
+```
+
+> The backend currently doesn't define `start`/`dev` scripts in `package.json` — you can add them (`"start": "node server.js"`, `"dev": "nodemon server.js"`) to use `npm start` / `npm run dev` instead.
+
+## Frontend setup
+
+Move into the frontend folder
+
+```bash
+cd frontend
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Start the Angular dev server
 
 ```bash
 npm start
 ```
 
-Development Mode
-
-```bash
-npm run dev
-```
+The app will be available at `http://localhost:4200` by default.
 
 ---
 
@@ -202,6 +283,9 @@ npm run dev
 |---------|----------|
 | POST | /api/budgets |
 | GET | /api/budgets |
+| GET | /api/budgets/:id |
+| PUT | /api/budgets/:id |
+| DELETE | /api/budgets/:id |
 
 ---
 
@@ -211,6 +295,8 @@ npm run dev
 |---------|----------|
 | POST | /api/tax-estimates |
 | GET | /api/tax-estimates |
+| GET | /api/tax-estimates/:id |
+| DELETE | /api/tax-estimates/:id |
 
 ---
 
@@ -251,3 +337,15 @@ Authorization: Bearer <your_token>
 
 ---
 
+# 🧭 Frontend Routes
+
+| Path | Page |
+|------|------|
+| /login | Login |
+| /register | Register |
+| /dashboard | Dashboard |
+| /income | Income |
+| /expense | Expense |
+| /transactions | Transactions |
+
+---
