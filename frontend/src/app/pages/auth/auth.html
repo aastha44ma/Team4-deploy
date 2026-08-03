@@ -5,12 +5,8 @@
        TOP TOAST
        ======================================================= -->
 
-  <div
-    class="auth-toast"
-    *ngIf="showToast"
-    [class.toast-error]="toastType === 'error'"
-    [class.toast-success]="toastType === 'success'"
-  >
+  <div class="auth-toast" *ngIf="showToast" [class.toast-error]="toastType === 'error'"
+    [class.toast-success]="toastType === 'success'">
 
     <span class="toast-icon">
       {{ toastType === 'success' ? '✓' : '!' }}
@@ -20,12 +16,7 @@
       {{ toastMessage }}
     </span>
 
-    <button
-      type="button"
-      class="toast-close"
-      (click)="hideToast()"
-      aria-label="Close notification"
-    >
+    <button type="button" class="toast-close" (click)="hideToast()" aria-label="Close notification">
       ×
     </button>
 
@@ -111,10 +102,7 @@
            LOGIN HEADING
            =================================================== -->
 
-      <div
-        class="auth-heading"
-        *ngIf="isLogin"
-      >
+      <div class="auth-heading" *ngIf="isLogin">
 
         <h1>
           Welcome back
@@ -131,10 +119,7 @@
            REGISTER HEADING
            =================================================== -->
 
-      <div
-        class="auth-heading"
-        *ngIf="!isLogin"
-      >
+      <div class="auth-heading" *ngIf="!isLogin">
 
         <h1>
           Create your account
@@ -151,41 +136,25 @@
            AUTH FORM
            =================================================== -->
 
-      <form
-        [formGroup]="authForm"
-        (ngSubmit)="onSubmit()"
-        class="auth-form"
-      >
+      <form [formGroup]="authForm" (ngSubmit)="onSubmit()" class="auth-form">
 
 
         <!-- ===============================================
              FULL NAME - REGISTER ONLY
              =============================================== -->
 
-        <div
-          class="form-field"
-          *ngIf="!isLogin"
-        >
+        <div class="form-field" *ngIf="!isLogin">
 
           <label for="name">
             Full Name
           </label>
 
-          <input
-            id="name"
-            type="text"
-            formControlName="name"
-            autocomplete="name"
-            placeholder="e.g. Rahul Sharma"
-          />
+          <input id="name" type="text" formControlName="name" autocomplete="name" placeholder="e.g. Rahul Sharma" />
 
-          <small
-            class="validation-message"
-            *ngIf="
+          <small class="validation-message" *ngIf="
               authForm.controls.name.touched &&
               authForm.controls.name.invalid
-            "
-          >
+            ">
             Full name is required.
           </small>
 
@@ -202,21 +171,13 @@
             Email Address
           </label>
 
-          <input
-            id="email"
-            type="email"
-            formControlName="email"
-            autocomplete="email"
-            placeholder="e.g. rahul@example.com"
-          />
+          <input id="email" type="email" formControlName="email" autocomplete="email"
+            placeholder="e.g. rahul@example.com" />
 
-          <small
-            class="validation-message"
-            *ngIf="
+          <small class="validation-message" *ngIf="
               authForm.controls.email.touched &&
               authForm.controls.email.invalid
-            "
-          >
+            ">
             Please enter a valid email address.
           </small>
 
@@ -227,19 +188,13 @@
              COUNTRY - REGISTER ONLY
              =============================================== -->
 
-        <div
-          class="form-field"
-          *ngIf="!isLogin"
-        >
+        <div class="form-field" *ngIf="!isLogin">
 
           <label for="country">
             Country
           </label>
 
-          <select
-            id="country"
-            formControlName="country"
-          >
+          <select id="country" formControlName="country">
 
             <option value="">
               Select your country
@@ -267,18 +222,62 @@
 
           </select>
 
-          <small
-            class="validation-message"
-            *ngIf="
+          <small class="validation-message" *ngIf="
               authForm.controls.country.touched &&
               authForm.controls.country.invalid
-            "
-          >
+            ">
             Please select your country.
           </small>
 
         </div>
 
+
+        <!-- ===============================================
+     INCOME BRACKET - REGISTER ONLY
+     =============================================== -->
+
+        <div class="form-field" *ngIf="!isLogin">
+
+          <label for="incomeBracket">
+            Income Bracket
+          </label>
+
+
+          <select id="incomeBracket" formControlName="incomeBracket">
+
+            <option value="">
+              Select your income range
+            </option>
+
+            <option value="low">
+              Below ₹3 Lakh
+            </option>
+
+            <option value="medium">
+              ₹3 Lakh - ₹10 Lakh
+            </option>
+
+            <option value="high">
+              ₹10 Lakh - ₹25 Lakh
+            </option>
+
+            <option value="premium">
+              Above ₹25 Lakh
+            </option>
+
+
+          </select>
+
+
+          <small class="validation-message" *ngIf="
+      authForm.controls.incomeBracket.touched &&
+      authForm.controls.incomeBracket.invalid
+    ">
+            Please select your income bracket.
+          </small>
+
+
+        </div>
 
         <!-- ===============================================
              PASSWORD
@@ -293,54 +292,37 @@
 
           <div class="password-wrapper">
 
-            <input
-              id="password"
-              [type]="showPassword ? 'text' : 'password'"
-              formControlName="password"
-              [autocomplete]="
+            <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" [autocomplete]="
                 isLogin
                   ? 'current-password'
                   : 'new-password'
-              "
-              [placeholder]="
+              " [placeholder]="
                 isLogin
                   ? 'Enter your password'
                   : 'Create a strong password'
-              "
-            />
+              " />
 
 
-            <button
-              type="button"
-              class="password-toggle"
-              (click)="togglePassword()"
-              [attr.aria-label]="
+            <button type="button" class="password-toggle" (click)="togglePassword()" [attr.aria-label]="
                 showPassword
                   ? 'Hide password'
                   : 'Show password'
-              "
-            >
+              ">
               {{ showPassword ? 'Hide' : 'Show' }}
             </button>
 
           </div>
 
 
-          <small
-            class="field-hint"
-            *ngIf="!isLogin"
-          >
+          <small class="field-hint" *ngIf="!isLogin">
             Must be at least 8 characters long.
           </small>
 
 
-          <small
-            class="validation-message"
-            *ngIf="
+          <small class="validation-message" *ngIf="
               authForm.controls.password.touched &&
               authForm.controls.password.invalid
-            "
-          >
+            ">
             Password must be at least 8 characters.
           </small>
 
@@ -351,16 +333,9 @@
              FORGOT PASSWORD - LOGIN ONLY
              =============================================== -->
 
-        <div
-          class="forgot-row"
-          *ngIf="isLogin"
-        >
+        <div class="forgot-row" *ngIf="isLogin">
 
-          <button
-            type="button"
-            class="forgot-password-link"
-            (click)="openForgotPassword()"
-          >
+          <button type="button" class="forgot-password-link" (click)="openForgotPassword()">
             Forgot password?
           </button>
 
@@ -371,10 +346,7 @@
              CONFIRM PASSWORD - REGISTER ONLY
              =============================================== -->
 
-        <div
-          class="form-field"
-          *ngIf="!isLogin"
-        >
+        <div class="form-field" *ngIf="!isLogin">
 
           <label for="confirmPassword">
             Confirm Password
@@ -383,56 +355,39 @@
 
           <div class="password-wrapper">
 
-            <input
-              id="confirmPassword"
-              [type]="
+            <input id="confirmPassword" [type]="
                 showConfirmPassword
                   ? 'text'
                   : 'password'
-              "
-              formControlName="confirmPassword"
-              autocomplete="new-password"
-              placeholder="Re-enter your password"
-            />
+              " formControlName="confirmPassword" autocomplete="new-password" placeholder="Re-enter your password" />
 
 
-            <button
-              type="button"
-              class="password-toggle"
-              (click)="toggleConfirmPassword()"
-              [attr.aria-label]="
+            <button type="button" class="password-toggle" (click)="toggleConfirmPassword()" [attr.aria-label]="
                 showConfirmPassword
                   ? 'Hide password'
                   : 'Show password'
-              "
-            >
+              ">
               {{
-                showConfirmPassword
-                  ? 'Hide'
-                  : 'Show'
+              showConfirmPassword
+              ? 'Hide'
+              : 'Show'
               }}
             </button>
 
           </div>
 
 
-          <small
-            class="validation-message"
-            *ngIf="
+          <small class="validation-message" *ngIf="
               authForm.controls.confirmPassword.touched &&
               authForm.controls.confirmPassword.errors?.['required']
-            "
-          >
+            ">
             Please confirm your password.
           </small>
 
-          <small
-            class="validation-message"
-            *ngIf="
+          <small class="validation-message" *ngIf="
               authForm.controls.confirmPassword.touched &&
               authForm.controls.confirmPassword.errors?.['passwordMismatch']
-            "
-          >
+            ">
             Passwords do not match.
           </small>
 
@@ -443,16 +398,9 @@
              TERMS - REGISTER ONLY
              =============================================== -->
 
-        <div
-          class="terms-field"
-          *ngIf="!isLogin"
-        >
+        <div class="terms-field" *ngIf="!isLogin">
 
-          <input
-            id="terms"
-            type="checkbox"
-            formControlName="terms"
-          />
+          <input id="terms" type="checkbox" formControlName="terms" />
 
           <label for="terms">
 
@@ -477,10 +425,7 @@
              SUBMIT BUTTON
              =============================================== -->
 
-        <button
-          type="submit"
-          class="auth-button"
-        >
+        <button type="submit" class="auth-button">
 
           {{ isLogin ? 'Login' : 'Create Account' }}
 
@@ -504,10 +449,7 @@
         </span>
 
 
-        <button
-          type="button"
-          (click)="switchMode()"
-        >
+        <button type="button" (click)="switchMode()">
 
           {{ isLogin ? 'Create Account' : 'Login' }}
 
@@ -669,22 +611,14 @@
        FORGOT PASSWORD OVERLAY
        ======================================================= -->
 
-  <div
-    class="forgot-overlay"
-    *ngIf="showForgotPassword"
-  >
+  <div class="forgot-overlay" *ngIf="showForgotPassword">
 
     <div class="forgot-container">
 
 
       <!-- Close -->
 
-      <button
-        type="button"
-        class="forgot-close"
-        (click)="closeForgotPassword()"
-        aria-label="Close"
-      >
+      <button type="button" class="forgot-close" (click)="closeForgotPassword()" aria-label="Close">
         ×
       </button>
 
@@ -715,23 +649,14 @@
           Email Address
         </label>
 
-        <input
-          id="forgotEmail"
-          type="email"
-          [(ngModel)]="forgotEmail"
-          placeholder="Email"
-        />
+        <input id="forgotEmail" type="email" [(ngModel)]="forgotEmail" placeholder="Email" />
 
       </div>
 
 
       <!-- Submit -->
 
-      <button
-        type="button"
-        class="reset-button"
-        (click)="sendResetLink()"
-      >
+      <button type="button" class="reset-button" (click)="sendResetLink()">
         Send Reset Link
       </button>
 
