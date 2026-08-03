@@ -1,0 +1,41 @@
+const express = require("express");
+
+const app = express();
+
+// Middleware
+app.use(express.json());
+
+// Routes
+const authRoutes = require("./routes/auth.routes");
+const userRoutes = require("./routes/user.routes");
+const transactionRoutes = require("./routes/transaction.routes");
+const budgetRoutes = require("./routes/budget.routes");
+const taxRoutes = require("./routes/tax.routes");
+const reportRoutes = require("./routes/report.routes");
+const dashboardRoutes = require("./routes/dashboard.routes");
+const errorHandler = require("./middleware/error.middleware");
+const exportRoutes = require("./routes/export.routes");
+
+app.use("/api/auth", authRoutes);
+app.use("/api/user", userRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/budgets", budgetRoutes);
+app.use("/api/tax-estimates", taxRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/export", exportRoutes);
+
+// Test Route
+app.get("/", (req, res) => {
+    res.send("🚀 TaxPal Backend API is Running...");
+});
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route Not Found",
+  });
+});
+// Error Handler (LAST)
+app.use(errorHandler);
+module.exports = app;
