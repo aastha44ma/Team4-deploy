@@ -4,13 +4,18 @@ const port = process.env.PORT || 5000;
 
 app.use(express.json());
 
+const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || 'http://localhost:4200')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
+
 // Simple CORS
 app.use((req, res, next) => {
-  // Allow the requesting origin and credentials so browser requests with
-  // `withCredentials: true` succeed during development.
-  const origin = req.headers.origin || '*';
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') {
