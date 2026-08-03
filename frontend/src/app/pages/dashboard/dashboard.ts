@@ -94,15 +94,20 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
     this.cdr.detectChanges();
-    this.api.getTransactions().subscribe({
+    this.api.getDashboard().subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        if (res && res.data) {
-          this.transactions = res.data;
-        } else {
+       if (res && res.dashboard) {
+    this.userName = res.dashboard.user.name;
+    this.totalIncome = res.dashboard.summary.totalIncome;
+    this.totalExpense = res.dashboard.summary.totalExpense;
+    this.savings = res.dashboard.summary.balance;
+
+    this.transactions = res.dashboard.recentTransactions;
+} else {
           this.transactions = [];
         }
-        this.calculateMetrics();
+      
         this.cdr.detectChanges();
         // Re-render charts after transactions loaded
         setTimeout(() => {
@@ -126,43 +131,72 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  loadChartData() {
-    this.isLoadingChart = true;
-    this.cdr.detectChanges();
-    this.api.getTransactions().subscribe({
-      next: (res: any) => {
-        this.isLoadingChart = false;
-        if (res && res.data) {
-          const expenses = res.data.filter((t: any) => t.type === 'Expense');
-          
-          const categoryMap = new Map<string, number>();
-          expenses.forEach((t: any) => {
-            const amount = Number(t.amount) || 0;
-            const current = categoryMap.get(t.category) || 0;
-            categoryMap.set(t.category, current + amount);
-          });
+loadChartData() {
+  this.isLoadingChart = true;
+  this.cdr.detectChanges();
 
-          this.expenseCategories = Array.from(categoryMap.entries()).map(([category, amount]) => ({
-            category,
-            amount
-          }));
+  this.api.getDashboard().subscribe({
+    next: (res: any) => {
 
-          this.cdr.detectChanges();
+      this.isLoadingChart = false;
 
-          setTimeout(() => {
-            this.renderSpendingChart();
-          }, 100);
-        }
+      if (res && res.dashboard) {
+
+        const expenses =
+          res.dashboard.recentTransactions.filter(
+            (t: any) => t.type === 'Expense'
+          );
+
+        const categoryMap = new Map<string, number>();
+
+        expenses.forEach((t: any) => {
+
+          const amount = Number(t.amount) || 0;
+
+          const current =
+            categoryMap.get(t.category) || 0;
+
+          categoryMap.set(
+            t.category,
+            current + amount
+          );
+
+        });
+
+        this.expenseCategories =
+          Array.from(categoryMap.entries()).map(
+            ([category, amount]) => ({
+              category,
+              amount
+            })
+          );
+
         this.cdr.detectChanges();
-      },
-      error: (err: any) => {
-        this.isLoadingChart = false;
-        console.error('Error loading chart data:', err);
-        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.renderSpendingChart();
+        }, 100);
+
       }
-    });
-  }
 
+      this.cdr.detectChanges();
+
+    },
+
+    error: (err: any) => {
+
+      this.isLoadingChart = false;
+
+      console.error(
+        'Error loading chart data:',
+        err
+      );
+
+      this.cdr.detectChanges();
+
+    }
+  });
+}
   renderSpendingChart() {
     const canvas = document.getElementById('spendingChart') as HTMLCanvasElement;
     if (!canvas) {

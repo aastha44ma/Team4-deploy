@@ -401,4 +401,18 @@ export class ApiService {
 
   }
 
+
+  // =========================================================
+// DASHBOARD
+// =========================================================
+
+getDashboard() {
+
+  return this.http.get(
+    `${this.baseUrl}/dashboard`,
+    this.getOptions()
+  );
+
+}
+
 }
