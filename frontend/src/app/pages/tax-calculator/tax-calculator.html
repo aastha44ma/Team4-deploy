@@ -1,0 +1,324 @@
+<section class="tax-page">
+  <header class="page-header">
+    <div>
+      <h1>Tax Calculator</h1>
+      <p>
+        Estimate your income tax based on the selected country,
+        financial year, and tax regime.
+      </p>
+    </div>
+  </header>
+
+  <div *ngIf="errorMessage" class="message error-message">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="successMessage" class="message success-message">
+    {{ successMessage }}
+  </div>
+
+  <div class="tax-layout">
+    <section class="tax-card calculator-card">
+      <h2>Calculate Estimated Tax</h2>
+
+      <form
+        [formGroup]="taxForm"
+        (ngSubmit)="calculateTax()"
+        class="tax-form"
+      >
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="country">Country</label>
+
+            <select id="country" formControlName="country">
+              <option
+                *ngFor="let country of countries"
+                [value]="country"
+              >
+                {{ country }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="region">State / Region</label>
+
+            <select id="region" formControlName="region">
+              <option value="">Select state / region</option>
+
+              <option
+                *ngFor="let region of regions"
+                [value]="region"
+              >
+                {{ region }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="taxYear">Financial Year</label>
+
+            <select id="taxYear" formControlName="taxYear">
+              <option
+                *ngFor="let taxYear of taxYears"
+                [value]="taxYear"
+              >
+                {{ taxYear }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="taxRegime">Tax Regime</label>
+
+            <select id="taxRegime" formControlName="taxRegime">
+              <option
+                *ngFor="let regime of taxRegimes"
+                [value]="regime.value"
+              >
+                {{ regime.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group income-group">
+            <label for="taxableIncome">Taxable Income</label>
+
+            <input
+              id="taxableIncome"
+              type="number"
+              min="0"
+              step="1000"
+              formControlName="taxableIncome"
+              placeholder="Enter taxable income"
+            />
+
+            <small
+              class="validation-error"
+              *ngIf="
+                taxForm.controls.taxableIncome.touched &&
+                taxForm.controls.taxableIncome.invalid
+              "
+            >
+              Enter a valid taxable income.
+            </small>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="isCalculating"
+        >
+          {{ isCalculating ? 'Calculating...' : 'Calculate Tax' }}
+        </button>
+      </form>
+    </section>
+
+    <section
+      *ngIf="calculationResult"
+      class="tax-card result-card"
+    >
+      <div class="result-heading">
+        <div>
+          <h2>Tax Estimate</h2>
+
+          <p>
+            {{ calculationResult.taxRegimeLabel }}
+            &middot;
+            {{ calculationResult.taxYear }}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          class="save-button"
+          (click)="saveEstimate()"
+          [disabled]="isSaving"
+        >
+          {{ isSaving ? 'Saving...' : 'Save Estimate' }}
+        </button>
+      </div>
+
+      <div class="result-summary">
+        <article class="result-summary-card">
+          <span>Taxable Income</span>
+
+          <strong>
+            &#8377;{{ calculationResult.taxableIncome | number:'1.2-2' }}
+          </strong>
+        </article>
+
+        <article class="result-summary-card">
+          <span>Estimated Tax</span>
+
+          <strong class="tax-value">
+            &#8377;{{ calculationResult.estimatedTax | number:'1.2-2' }}
+          </strong>
+        </article>
+
+        <article class="result-summary-card">
+          <span>Effective Tax Rate</span>
+
+          <strong>
+            {{ calculationResult.effectiveTaxRate | number:'1.2-2' }}%
+          </strong>
+        </article>
+      </div>
+
+      <div class="slab-section">
+        <h3>Tax Slab Breakdown</h3>
+
+        <div class="table-wrapper">
+          <table class="slab-table">
+            <thead>
+              <tr>
+                <th>Income Slab</th>
+                <th>Taxable Amount</th>
+                <th>Rate</th>
+                <th>Tax Amount</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr
+                *ngFor="
+                  let slab of calculationResult.slabBreakdown;
+                  trackBy: trackSlab
+                "
+              >
+                <td>{{ slab.label }}</td>
+
+                <td>
+                  &#8377;{{ slab.taxableAmount | number:'1.2-2' }}
+                </td>
+
+                <td>
+                  {{ slab.rate | number:'1.0-2' }}%
+                </td>
+
+                <td>
+                  &#8377;{{ slab.taxAmount | number:'1.2-2' }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="tax-card history-card">
+    <div class="history-heading">
+      <div>
+        <h2>Saved Tax Estimates</h2>
+
+        <p>
+          Review your previously saved tax calculations.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="loadTaxEstimates()"
+        [disabled]="isLoadingHistory"
+      >
+        Refresh
+      </button>
+    </div>
+
+    <p
+      *ngIf="isLoadingHistory"
+      class="state-message"
+    >
+      Loading saved tax estimates...
+    </p>
+
+    <p
+      *ngIf="
+        !isLoadingHistory &&
+        taxEstimates.length === 0
+      "
+      class="state-message"
+    >
+      No saved tax estimates yet.
+    </p>
+
+    <div
+      *ngIf="
+        !isLoadingHistory &&
+        taxEstimates.length > 0
+      "
+      class="estimate-list"
+    >
+      <article
+        *ngFor="
+          let estimate of taxEstimates;
+          trackBy: trackEstimate
+        "
+        class="estimate-item"
+      >
+        <div class="estimate-main">
+          <div>
+            <h3>
+              {{ estimate.country }}
+
+              <span *ngIf="estimate.region">
+                &middot; {{ estimate.region }}
+              </span>
+            </h3>
+
+            <p>
+              {{ estimate.taxYear }}
+              &middot;
+              {{
+                estimate.taxRegime === 'new'
+                  ? 'New Tax Regime'
+                  : estimate.taxRegime
+              }}
+            </p>
+
+            <small>
+              Saved {{ estimate.createdAt | date:'medium' }}
+            </small>
+          </div>
+
+          <div class="estimate-values">
+            <div>
+              <span>Taxable Income</span>
+
+              <strong>
+                &#8377;{{ estimate.taxableIncome | number:'1.2-2' }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Estimated Tax</span>
+
+              <strong class="tax-value">
+                &#8377;{{ estimate.estimatedTax | number:'1.2-2' }}
+              </strong>
+            </div>
+
+            <div>
+              <span>Effective Rate</span>
+
+              <strong>
+                {{ estimate.effectiveTaxRate | number:'1.2-2' }}%
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="delete-button"
+          (click)="deleteEstimate(estimate)"
+        >
+          Delete
+        </button>
+      </article>
+    </div>
+  </section>
+</section>

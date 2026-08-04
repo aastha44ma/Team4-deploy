@@ -1,0 +1,669 @@
+<div class="auth-page">
+
+
+  <!-- =======================================================
+       TOP TOAST
+       ======================================================= -->
+
+  <div class="auth-toast" *ngIf="showToast" [class.toast-error]="toastType === 'error'"
+    [class.toast-success]="toastType === 'success'">
+
+    <span class="toast-icon">
+      {{ toastType === 'success' ? '✓' : '!' }}
+    </span>
+
+    <span class="toast-message">
+      {{ toastMessage }}
+    </span>
+
+    <button type="button" class="toast-close" (click)="hideToast()" aria-label="Close notification">
+      ×
+    </button>
+
+  </div>
+
+
+  <!-- =======================================================
+       MOBILE BRAND HEADER
+       ======================================================= -->
+
+  <div class="mobile-brand">
+
+    <div class="mobile-brand-glow"></div>
+
+
+    <div class="mobile-brand-top">
+
+      <div class="brand-logo">
+
+        <div class="brand-icon">
+          ₹
+        </div>
+
+        <span class="brand-name">
+          TaxPal<span class="brand-dot">.</span>
+        </span>
+
+      </div>
+
+
+      <span class="secure-badge">
+        Secure
+      </span>
+
+    </div>
+
+
+    <div class="mobile-brand-intro">
+
+      <h2>
+        Take control of your finances.
+      </h2>
+
+      <p>
+        Manage income, expenses, budgets, and taxes seamlessly.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <!-- =======================================================
+       DESKTOP LEFT / FORM SIDE
+       ======================================================= -->
+
+  <section class="auth-form-section">
+
+
+    <!-- Desktop Logo -->
+
+    <div class="desktop-logo">
+
+      <div class="brand-icon">
+        ₹
+      </div>
+
+      <span class="brand-name">
+        TaxPal<span class="brand-dot">.</span>
+      </span>
+
+    </div>
+
+
+    <!-- =====================================================
+         FORM WRAPPER
+         ===================================================== -->
+
+    <div class="auth-form-wrapper">
+
+
+      <!-- ===================================================
+           LOGIN HEADING
+           =================================================== -->
+
+      <div class="auth-heading" *ngIf="isLogin">
+
+        <h1>
+          Welcome back
+        </h1>
+
+        <p>
+          Login to continue managing your finances with TaxPal.
+        </p>
+
+      </div>
+
+
+      <!-- ===================================================
+           REGISTER HEADING
+           =================================================== -->
+
+      <div class="auth-heading" *ngIf="!isLogin">
+
+        <h1>
+          Create your account
+        </h1>
+
+        <p>
+          Start managing your finances with TaxPal today.
+        </p>
+
+      </div>
+
+
+      <!-- ===================================================
+           AUTH FORM
+           =================================================== -->
+
+      <form [formGroup]="authForm" (ngSubmit)="onSubmit()" class="auth-form">
+
+
+        <!-- ===============================================
+             FULL NAME - REGISTER ONLY
+             =============================================== -->
+
+        <div class="form-field" *ngIf="!isLogin">
+
+          <label for="name">
+            Full Name
+          </label>
+
+          <input id="name" type="text" formControlName="name" autocomplete="name" placeholder="e.g. Rahul Sharma" />
+
+          <small class="validation-message" *ngIf="
+              authForm.controls.name.touched &&
+              authForm.controls.name.invalid
+            ">
+            Full name is required.
+          </small>
+
+        </div>
+
+
+        <!-- ===============================================
+             EMAIL
+             =============================================== -->
+
+        <div class="form-field">
+
+          <label for="email">
+            Email Address
+          </label>
+
+          <input id="email" type="email" formControlName="email" autocomplete="email"
+            placeholder="e.g. rahul@example.com" />
+
+          <small class="validation-message" *ngIf="
+              authForm.controls.email.touched &&
+              authForm.controls.email.invalid
+            ">
+            Please enter a valid email address.
+          </small>
+
+        </div>
+
+
+        <!-- ===============================================
+             COUNTRY - REGISTER ONLY
+             =============================================== -->
+
+        <div class="form-field" *ngIf="!isLogin">
+
+          <label for="country">
+            Country
+          </label>
+
+          <select id="country" formControlName="country">
+
+            <option value="">
+              Select your country
+            </option>
+
+            <option value="india">
+              India
+            </option>
+
+            <option value="usa">
+              United States
+            </option>
+
+            <option value="uk">
+              United Kingdom
+            </option>
+
+            <option value="canada">
+              Canada
+            </option>
+
+            <option value="australia">
+              Australia
+            </option>
+
+          </select>
+
+          <small class="validation-message" *ngIf="
+              authForm.controls.country.touched &&
+              authForm.controls.country.invalid
+            ">
+            Please select your country.
+          </small>
+
+        </div>
+
+
+        <!-- ===============================================
+     INCOME BRACKET - REGISTER ONLY
+     =============================================== -->
+
+        <div class="form-field" *ngIf="!isLogin">
+
+          <label for="incomeBracket">
+            Income Bracket
+          </label>
+
+
+          <select id="incomeBracket" formControlName="incomeBracket">
+
+            <option value="">
+              Select your income range
+            </option>
+
+            <option value="low">
+              Below ₹3 Lakh
+            </option>
+
+            <option value="medium">
+              ₹3 Lakh - ₹10 Lakh
+            </option>
+
+            <option value="high">
+              ₹10 Lakh - ₹25 Lakh
+            </option>
+
+            <option value="premium">
+              Above ₹25 Lakh
+            </option>
+
+
+          </select>
+
+
+          <small class="validation-message" *ngIf="
+      authForm.controls.incomeBracket.touched &&
+      authForm.controls.incomeBracket.invalid
+    ">
+            Please select your income bracket.
+          </small>
+
+
+        </div>
+
+        <!-- ===============================================
+             PASSWORD
+             =============================================== -->
+
+        <div class="form-field">
+
+          <label for="password">
+            Password
+          </label>
+
+
+          <div class="password-wrapper">
+
+            <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" [autocomplete]="
+                isLogin
+                  ? 'current-password'
+                  : 'new-password'
+              " [placeholder]="
+                isLogin
+                  ? 'Enter your password'
+                  : 'Create a strong password'
+              " />
+
+
+            <button type="button" class="password-toggle" (click)="togglePassword()" [attr.aria-label]="
+                showPassword
+                  ? 'Hide password'
+                  : 'Show password'
+              ">
+              {{ showPassword ? 'Hide' : 'Show' }}
+            </button>
+
+          </div>
+
+
+          <small class="field-hint" *ngIf="!isLogin">
+            Must be at least 8 characters long.
+          </small>
+
+
+          <small class="validation-message" *ngIf="
+              authForm.controls.password.touched &&
+              authForm.controls.password.invalid
+            ">
+            Password must be at least 8 characters.
+          </small>
+
+        </div>
+
+
+        <!-- ===============================================
+             FORGOT PASSWORD - LOGIN ONLY
+             =============================================== -->
+
+        <div class="forgot-row" *ngIf="isLogin">
+
+          <button type="button" class="forgot-password-link" (click)="openForgotPassword()">
+            Forgot password?
+          </button>
+
+        </div>
+
+
+        <!-- ===============================================
+             CONFIRM PASSWORD - REGISTER ONLY
+             =============================================== -->
+
+        <div class="form-field" *ngIf="!isLogin">
+
+          <label for="confirmPassword">
+            Confirm Password
+          </label>
+
+
+          <div class="password-wrapper">
+
+            <input id="confirmPassword" [type]="
+                showConfirmPassword
+                  ? 'text'
+                  : 'password'
+              " formControlName="confirmPassword" autocomplete="new-password" placeholder="Re-enter your password" />
+
+
+            <button type="button" class="password-toggle" (click)="toggleConfirmPassword()" [attr.aria-label]="
+                showConfirmPassword
+                  ? 'Hide password'
+                  : 'Show password'
+              ">
+              {{
+              showConfirmPassword
+              ? 'Hide'
+              : 'Show'
+              }}
+            </button>
+
+          </div>
+
+
+          <small class="validation-message" *ngIf="
+              authForm.controls.confirmPassword.touched &&
+              authForm.controls.confirmPassword.errors?.['required']
+            ">
+            Please confirm your password.
+          </small>
+
+          <small class="validation-message" *ngIf="
+              authForm.controls.confirmPassword.touched &&
+              authForm.controls.confirmPassword.errors?.['passwordMismatch']
+            ">
+            Passwords do not match.
+          </small>
+
+        </div>
+
+
+        <!-- ===============================================
+             TERMS - REGISTER ONLY
+             =============================================== -->
+
+        <div class="terms-field" *ngIf="!isLogin">
+
+          <input id="terms" type="checkbox" formControlName="terms" />
+
+          <label for="terms">
+
+            I agree to the
+
+            <a href="#">
+              Terms
+            </a>
+
+            and
+
+            <a href="#">
+              Privacy Policy
+            </a>.
+
+          </label>
+
+        </div>
+
+
+        <!-- ===============================================
+             SUBMIT BUTTON
+             =============================================== -->
+
+        <button type="submit" class="auth-button">
+
+          {{ isLogin ? 'Login' : 'Create Account' }}
+
+        </button>
+
+      </form>
+
+
+      <!-- =================================================
+           SWITCH LOGIN / REGISTER
+           ================================================= -->
+
+      <div class="switch-auth">
+
+        <span *ngIf="isLogin">
+          Don't have an account?
+        </span>
+
+        <span *ngIf="!isLogin">
+          Already have an account?
+        </span>
+
+
+        <button type="button" (click)="switchMode()">
+
+          {{ isLogin ? 'Create Account' : 'Login' }}
+
+        </button>
+
+      </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         DESKTOP FORM FOOTER
+         ===================================================== -->
+
+    <div class="form-footer">
+
+      © 2026 TaxPal. Personal finance made simple.
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       DESKTOP RIGHT BRANDING
+       ======================================================= -->
+
+  <section class="brand-section">
+
+
+    <!-- Decorative Glows -->
+
+    <div class="brand-glow brand-glow-top"></div>
+
+    <div class="brand-glow brand-glow-bottom"></div>
+
+
+    <!-- Badge -->
+
+    <div class="brand-badge-container">
+
+      <span class="brand-badge">
+        Secure & Automated
+      </span>
+
+    </div>
+
+
+    <!-- Main Branding Content -->
+
+    <div class="brand-content">
+
+      <div>
+
+        <h2>
+          Take control of your finances effortlessly.
+        </h2>
+
+        <p>
+          Manage your income, expenses, budgets, and tax estimates
+          in one simple, powerful, and organized place.
+        </p>
+
+      </div>
+
+
+      <!-- Benefits -->
+
+      <div class="benefits-list">
+
+
+        <!-- Benefit 1 -->
+
+        <div class="benefit-item">
+
+          <div class="benefit-icon">
+            ✓
+          </div>
+
+          <div>
+
+            <p class="benefit-title">
+              Track your money
+            </p>
+
+            <p class="benefit-description">
+              Keep income and expenses organized in real time.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- Benefit 2 -->
+
+        <div class="benefit-item">
+
+          <div class="benefit-icon">
+            ✓
+          </div>
+
+          <div>
+
+            <p class="benefit-title">
+              Plan your budget
+            </p>
+
+            <p class="benefit-description">
+              Set monthly limits and monitor spending behavior.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <!-- Benefit 3 -->
+
+        <div class="benefit-item">
+
+          <div class="benefit-icon">
+            ✓
+          </div>
+
+          <div>
+
+            <p class="benefit-title">
+              Prepare for taxes
+            </p>
+
+            <p class="benefit-description">
+              Estimate regional taxes seamlessly before filing.
+            </p>
+
+          </div>
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+
+    <!-- Brand Footer -->
+
+    <div class="brand-footer">
+
+      © 2026 TaxPal Inc.
+
+    </div>
+
+  </section>
+
+
+  <!-- =======================================================
+       FORGOT PASSWORD OVERLAY
+       ======================================================= -->
+
+  <div class="forgot-overlay" *ngIf="showForgotPassword">
+
+    <div class="forgot-container">
+
+
+      <!-- Close -->
+
+      <button type="button" class="forgot-close" (click)="closeForgotPassword()" aria-label="Close">
+        ×
+      </button>
+
+
+      <!-- Icon -->
+
+      <div class="forgot-icon">
+        ✉
+      </div>
+
+
+      <h2>
+        Reset your password
+      </h2>
+
+
+      <p>
+        Enter your registered email address and we'll send you
+        a password reset link.
+      </p>
+
+
+      <!-- Email -->
+
+      <div class="form-field">
+
+        <label for="forgotEmail">
+          Email Address
+        </label>
+
+        <input id="forgotEmail" type="email" [(ngModel)]="forgotEmail" placeholder="Email" />
+
+      </div>
+
+
+      <!-- Submit -->
+
+      <button type="button" class="reset-button" (click)="sendResetLink()">
+        Send Reset Link
+      </button>
+
+
+    </div>
+
+  </div>
+
+
+</div>
