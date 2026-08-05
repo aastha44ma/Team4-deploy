@@ -210,70 +210,51 @@ export class ApiService {
 
 
 
+// =========================================================
+// BUDGET
+// =========================================================
 
-  // =========================================================
-  // BUDGET
-  // =========================================================
+getBudgets(month?: string) {
 
+  const url = month
+    ? `${this.baseUrl}/budgets?month=${month}`
+    : `${this.baseUrl}/budgets`;
 
-  getBudgets(month?: string) {
+  return this.http.get(
+    url,
+    this.getOptions()
+  );
 
+}
 
-    const url =
-      month
-        ? `${this.baseUrl}/budgets?month=${month}`
-        : `${this.baseUrl}/budgets`;
+createBudget(data: any) {
 
+  return this.http.post(
+    `${this.baseUrl}/budgets`,
+    data,
+    this.getOptions()
+  );
 
-    return this.http.get(
-      url,
-      this.getOptions()
-    );
+}
 
-  }
+updateBudget(id: number, data: any) {
 
+  return this.http.put(
+    `${this.baseUrl}/budgets/${id}`,
+    data,
+    this.getOptions()
+  );
 
+}
 
+deleteBudget(id: number) {
 
-  updateBudget(
-    data: {
-      category: string;
-      limit: number;
-      month?: string;
-      description?: string;
-    }
-  ) {
+  return this.http.delete(
+    `${this.baseUrl}/budgets/${id}`,
+    this.getOptions()
+  );
 
-    return this.http.post(
-      `${this.baseUrl}/budgets`,
-      data,
-      this.getOptions()
-    );
-
-  }
-
-
-
-
-  deleteBudget(
-    category: string,
-    month?: string
-  ) {
-
-
-    const url =
-      month
-        ? `${this.baseUrl}/budgets/${category}?month=${month}`
-        : `${this.baseUrl}/budgets/${category}`;
-
-
-    return this.http.delete(
-      url,
-      this.getOptions()
-    );
-
-  }
-
+}
 
 
 

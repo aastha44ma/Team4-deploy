@@ -244,17 +244,16 @@ resetForm(){
 
   }
 
-  formatCurrency(amount: number): string {
+formatCurrency(amount: number | undefined | null): string {
 
-    return '₹' + Number(amount).toLocaleString(
-      'en-IN',
-      {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      }
-    );
+  const value = Number(amount ?? 0);
 
-  }
+  return '₹' + value.toLocaleString('en-IN', {
+    minimumFractionDigits:2,
+    maximumFractionDigits:2
+  });
+
+}
 
   formatDate(date: string): string {
 

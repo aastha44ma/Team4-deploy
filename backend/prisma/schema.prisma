@@ -39,13 +39,16 @@ model Transaction {
 }
 
 model Budget {
-  id        Int      @id @default(autoincrement())
-  category  String
-  limit     Float
-  month     String
+  id          Int      @id @default(autoincrement())
+  category    String
+  limit       Float
+  month       String
+  description String?
 
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  userId      Int
+  user        User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, category, month])
 }
 
 model TaxEstimate {
