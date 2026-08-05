@@ -1,4 +1,9 @@
 import { Routes } from '@angular/router';
+import { Dashboard } from './pages/dashboard/dashboard';
+import { Transactions } from './pages/transactions/transactions';
+import { Budgets } from './pages/budgets/budgets';
+import { TaxCalculator } from './pages/tax-calculator/tax-calculator';
+
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -69,6 +74,22 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/transactions/transactions')
         .then(m => m.Transactions)
+  },
+
+  {
+    path: 'budgets',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/budgets/budgets')
+        .then(m => m.Budgets)
+  },
+
+  {
+    path: 'tax-calculator',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/tax-calculator/tax-calculator')
+        .then(m => m.TaxCalculator)
   },
 
 
