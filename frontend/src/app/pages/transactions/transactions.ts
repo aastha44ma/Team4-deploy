@@ -25,7 +25,44 @@ export class Transactions implements OnInit {
   showAddForm = false;
 
   transactionType = 'Income';
+  customCategory = '';
+  isOtherCategory = false;
+
   category = '';
+
+  incomeCategories = [
+
+    'Salary',
+    'Freelancing',
+    'Consulting',
+    'Investment',
+    'Bonus',
+    'Refund',
+    'Other'
+
+  ];
+
+  expenseCategories = [
+
+    'Office Supplies',
+    'Software & SaaS',
+    'Hardware & Equipment',
+    'Internet & Communication',
+    'Travel & Transportation',
+    'Food & Client Meetings',
+    'Marketing & Advertising',
+    'Professional Services',
+    'Learning & Courses',
+    'Subscriptions',
+    'Bank Charges & Fees',
+    'Insurance',
+    'Taxes',
+    'Rent & Workspace',
+    'Utilities',
+    'Other'
+
+  ];
+
   amount: number | null = null;
   transactionDate = '';
 
@@ -36,11 +73,11 @@ export class Transactions implements OnInit {
   isFormSubmitted = false;
   isFormLoading = false;
 
- constructor(
-  private api: ApiService,
-  private router: Router,
-  private cdr: ChangeDetectorRef
-) {}
+  constructor(
+    private api: ApiService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
 
@@ -85,40 +122,51 @@ export class Transactions implements OnInit {
       localStorage.setItem('theme', 'dark');
     }
   }
-loadTransactions() {
+  loadTransactions() {
 
-  console.log("load called");
+    console.log("load called");
 
-  this.isLoading = true;
+    this.isLoading = true;
 
-  this.api.getTransactions().subscribe({
+    this.api.getTransactions().subscribe({
 
-    next:(res:any)=>{
+      next: (res: any) => {
 
-      console.log("API DATA",res);
+        console.log("API DATA", res);
 
-      this.transactions = [...(res.transactions || [])];
+        this.transactions = [...(res.transactions || [])];
 
-      this.isLoading = false;
+        this.isLoading = false;
 
-      console.log("FINAL ARRAY",this.transactions);
+        console.log("FINAL ARRAY", this.transactions);
 
-      this.cdr.detectChanges();
+        this.cdr.detectChanges();
 
-    },
+      },
 
-    error:(err)=>{
+      error: (err) => {
 
-      console.log(err);
+        console.log(err);
 
-      this.isLoading=false;
+        this.isLoading = false;
 
+      }
+
+    });
+
+  }
+
+
+
+  onCategoryChange() {
+
+    this.isOtherCategory = this.category === 'Other';
+
+    if (!this.isOtherCategory) {
+      this.customCategory = '';
     }
 
-  });
-
-}
-
+  }
   validateAddForm(): boolean {
 
     this.amountError = '';
@@ -137,6 +185,10 @@ loadTransactions() {
       this.categoryError = 'Category is required';
     }
 
+    if (this.category === 'Other' && !this.customCategory.trim()) {
+      this.categoryError = 'Please enter a category';
+    }
+
     if (!this.transactionDate) {
       this.dateError = 'Transaction date is required';
     }
@@ -147,76 +199,79 @@ loadTransactions() {
       !this.dateError
     );
   }
-saveTransaction(): void {
+  saveTransaction(): void {
 
-  this.isFormSubmitted = true;
+    this.isFormSubmitted = true;
 
-  if (!this.validateAddForm()) {
-    return;
-  }
-
-  this.isFormLoading = true;
-  this.errorMessage = '';
-
-  const payload = {
-
-    type: this.transactionType,
-    category: this.category.trim(),
-    amount: Number(this.amount),
-    date: this.transactionDate
-
-  };
-
-  console.log('POST Payload:', payload);
-
-  this.api.createTransaction(payload).subscribe({
-
-   next: (res:any)=>{
-
-  console.log("POST Success:",res);
-
-  this.isFormLoading = false;
-
-  this.resetForm();
-
-  setTimeout(()=>{
-    this.loadTransactions();
-  },300);
-
-},
-
-    error: (err: any) => {
-
-      console.error('POST Error:', err);
-
-      this.isFormLoading = false;
-
-      this.errorMessage =
-        err.error?.message || 'Failed to save transaction.';
-
+    if (!this.validateAddForm()) {
+      return;
     }
 
-  });
+    this.isFormLoading = true;
+    this.errorMessage = '';
 
-}
+    const payload = {
 
-resetForm(){
+      type: this.transactionType,
+      category:
+        this.category === 'Other'
+          ? this.customCategory.trim()
+          : this.category.trim(),
+      amount: Number(this.amount),
+      date: this.transactionDate
 
-  this.showAddForm = false;
+    };
 
-  this.transactionType = 'Income';
-  this.category = '';
-  this.amount = null;
-  this.transactionDate = new Date().toISOString().split('T')[0];
+    console.log('POST Payload:', payload);
 
-  this.amountError = '';
-  this.categoryError = '';
-  this.dateError = '';
+    this.api.createTransaction(payload).subscribe({
 
-  this.isFormSubmitted = false;
-  this.isFormLoading = false;
+      next: (res: any) => {
 
-}
+        console.log("POST Success:", res);
+
+        this.isFormLoading = false;
+
+        this.resetForm();
+
+        setTimeout(() => {
+          this.loadTransactions();
+        }, 300);
+
+      },
+
+      error: (err: any) => {
+
+        console.error('POST Error:', err);
+
+        this.isFormLoading = false;
+
+        this.errorMessage =
+          err.error?.message || 'Failed to save transaction.';
+
+      }
+
+    });
+
+  }
+
+  resetForm() {
+
+    this.showAddForm = false;
+
+    this.transactionType = 'Income';
+    this.category = '';
+    this.amount = null;
+    this.transactionDate = new Date().toISOString().split('T')[0];
+
+    this.amountError = '';
+    this.categoryError = '';
+    this.dateError = '';
+
+    this.isFormSubmitted = false;
+    this.isFormLoading = false;
+
+  }
 
   deleteTransaction(id: number) {
 
@@ -244,16 +299,16 @@ resetForm(){
 
   }
 
-formatCurrency(amount: number | undefined | null): string {
+  formatCurrency(amount: number | undefined | null): string {
 
-  const value = Number(amount ?? 0);
+    const value = Number(amount ?? 0);
 
-  return '₹' + value.toLocaleString('en-IN', {
-    minimumFractionDigits:2,
-    maximumFractionDigits:2
-  });
+    return '₹' + value.toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
 
-}
+  }
 
   formatDate(date: string): string {
 

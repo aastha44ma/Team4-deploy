@@ -203,7 +203,30 @@
 
           <label>Category</label>
 
-          <input type="text" [(ngModel)]="category" name="category" placeholder="Salary, Food, Rent">
+          <select [(ngModel)]="category" name="category" (change)="onCategoryChange()">
+
+            <option value="">Select Category</option>
+
+            @if (transactionType === 'Income') {
+
+            @for (cat of incomeCategories; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+            }
+
+            } @else {
+
+            @for (cat of expenseCategories; track cat) {
+            <option [value]="cat">{{ cat }}</option>
+            }
+
+            }
+
+          </select>
+          @if (isOtherCategory) {
+
+          <input type="text" [(ngModel)]="customCategory" name="customCategory" placeholder="Enter category">
+
+          }
 
           @if(categoryError){
 
