@@ -3,26 +3,55 @@ const prisma = require("../config/prisma");
 // Create Budget
 const createBudget = async (req, res) => {
     try {
-
         const { category, limit, month } = req.body;
 
-        // Validation
-        if (!category || !limit || !month) {
+        // Validate category
+        if (
+            typeof category !== "string" ||
+            !category.trim()
+        ) {
             return res.status(400).json({
                 success: false,
-                message: "All fields are required"
+                message: "Category is required"
             });
         }
 
-        // Logged-in User
+        // Validate budget limit
+        const numericLimit = Number(limit);
+
+        if (
+            limit === undefined ||
+            limit === null ||
+            limit === "" ||
+            !Number.isFinite(numericLimit) ||
+            numericLimit <= 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Limit must be a valid positive number"
+            });
+        }
+
+        // Validate month
+        if (
+            typeof month !== "string" ||
+            !month.trim()
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Month is required"
+            });
+        }
+
+        // Logged-in user
         const userId = req.user.userId;
 
         // Create Budget
         const budget = await prisma.budget.create({
             data: {
-                category,
-                limit: Number(limit),
-                month,
+                category: category.trim(),
+                limit: numericLimit,
+                month: month.trim(),
                 userId
             }
         });
@@ -34,21 +63,19 @@ const createBudget = async (req, res) => {
         });
 
     } catch (error) {
-
         console.error(error);
 
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
         });
-
     }
 };
+
 
 // Get All Budgets
 const getAllBudgets = async (req, res) => {
     try {
-
         const budgets = await prisma.budget.findMany({
             where: {
                 userId: req.user.userId
@@ -65,21 +92,19 @@ const getAllBudgets = async (req, res) => {
         });
 
     } catch (error) {
-
         console.error(error);
 
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
         });
-
     }
 };
+
 
 // Get Budget By ID
 const getBudgetById = async (req, res) => {
     try {
-
         const id = Number(req.params.id);
 
         const budget = await prisma.budget.findFirst({
@@ -102,21 +127,19 @@ const getBudgetById = async (req, res) => {
         });
 
     } catch (error) {
-
         console.error(error);
 
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
         });
-
     }
 };
+
 
 // Update Budget
 const updateBudget = async (req, res) => {
     try {
-
         const id = Number(req.params.id);
 
         // Check Budget belongs to logged-in user
@@ -136,14 +159,52 @@ const updateBudget = async (req, res) => {
 
         const { category, limit, month } = req.body;
 
+        // Validate category
+        if (
+            typeof category !== "string" ||
+            !category.trim()
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Category is required"
+            });
+        }
+
+        // Validate budget limit
+        const numericLimit = Number(limit);
+
+        if (
+            limit === undefined ||
+            limit === null ||
+            limit === "" ||
+            !Number.isFinite(numericLimit) ||
+            numericLimit <= 0
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Limit must be a valid positive number"
+            });
+        }
+
+        // Validate month
+        if (
+            typeof month !== "string" ||
+            !month.trim()
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Month is required"
+            });
+        }
+
         const updatedBudget = await prisma.budget.update({
             where: {
                 id
             },
             data: {
-                category,
-                limit: Number(limit),
-                month
+                category: category.trim(),
+                limit: numericLimit,
+                month: month.trim()
             }
         });
 
@@ -154,21 +215,19 @@ const updateBudget = async (req, res) => {
         });
 
     } catch (error) {
-
         console.error(error);
 
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
         });
-
     }
 };
+
 
 // Delete Budget
 const deleteBudget = async (req, res) => {
     try {
-
         const id = Number(req.params.id);
 
         // Check Budget belongs to logged-in user
@@ -198,16 +257,15 @@ const deleteBudget = async (req, res) => {
         });
 
     } catch (error) {
-
         console.error(error);
 
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
         });
-
     }
 };
+
 
 module.exports = {
     createBudget,
