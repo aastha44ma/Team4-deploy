@@ -1,141 +1,150 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { ApiService } from '../../services/api';
+
 import {
   FormBuilder,
   FormsModule,
   ReactiveFormsModule,
   Validators
 } from '@angular/forms';
+
 import {
   NavigationEnd,
   Router
 } from '@angular/router';
+
 import { filter } from 'rxjs';
+
 
 @Component({
   selector: 'app-auth',
   standalone: true,
+
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule
   ],
+
   templateUrl: './auth.html',
   styleUrl: './auth.css'
 })
+
+
 export class Auth {
 
-  // =========================================================
-  // MODE
-  // =========================================================
 
+  // MODE
   isLogin = true;
 
 
-  // =========================================================
-  // PASSWORD VISIBILITY
-  // =========================================================
-
+  // PASSWORD
   showPassword = false;
   showConfirmPassword = false;
 
 
-  // =========================================================
   // FORGOT PASSWORD
-  // =========================================================
-
   showForgotPassword = false;
   forgotEmail = '';
 
 
-  // =========================================================
+
   // TOAST
-  // =========================================================
-
   showToast = false;
-
   toastMessage = '';
-
   toastType: 'success' | 'error' = 'success';
 
 
-  // =========================================================
-  // FORM
-  // =========================================================
 
+  // FORM
   authForm;
 
 
-  // =========================================================
-  // CONSTRUCTOR
-  // =========================================================
 
   constructor(
+
     private formBuilder: FormBuilder,
-    private router: Router
+
+    private router: Router,
+
+    private apiService: ApiService
+
   ) {
 
-    // =======================================================
-    // CREATE FORM
-    // =======================================================
 
     this.authForm = this.formBuilder.group({
 
-      name: [
-        ''
-      ],
+
+      name: [''],
+
 
       email: [
+
         '',
+
         [
+
           Validators.required,
+
           Validators.email
+
         ]
+
       ],
 
-      country: [
-        ''
-      ],
+
+      country: [''],
+
+
+      incomeBracket: [''],
+
 
       password: [
+
         '',
+
         [
+
           Validators.required,
+
           Validators.minLength(8)
+
         ]
+
       ],
 
-      confirmPassword: [
-        ''
-      ],
 
-      terms: [
-        false
-      ]
+      confirmPassword: [''],
+
+
+      terms: [false]
+
 
     });
 
 
-    // =======================================================
-    // INITIAL MODE
-    // =======================================================
 
     this.updateMode();
 
     this.updateValidators();
 
 
-    // =======================================================
-    // ROUTE CHANGE
-    // =======================================================
 
     this.router.events
+
       .pipe(
+
         filter(
+
           event => event instanceof NavigationEnd
+
         )
+
       )
-      .subscribe(() => {
+
+      .subscribe(()=>{
+
 
         this.updateMode();
 
@@ -143,103 +152,115 @@ export class Auth {
 
         this.updateValidators();
 
+
       });
+
 
   }
 
 
-  // =========================================================
-  // UPDATE LOGIN / REGISTER MODE
-  // =========================================================
+
 
   private updateMode(): void {
 
+
     this.isLogin =
+
       this.router.url === '/login';
+
 
   }
 
 
-  // =========================================================
-  // UPDATE VALIDATORS
-  // =========================================================
+
+
 
   private updateValidators(): void {
+
 
     const nameControl =
       this.authForm.controls.name;
 
+
     const countryControl =
       this.authForm.controls.country;
 
+
+    const incomeBracketControl =
+      this.authForm.controls.incomeBracket;
+
+
     const confirmPasswordControl =
       this.authForm.controls.confirmPassword;
+
 
     const termsControl =
       this.authForm.controls.terms;
 
 
-    // =======================================================
-    // LOGIN
-    // =======================================================
 
-    if (this.isLogin) {
+    if(this.isLogin){
+
 
       nameControl.clearValidators();
 
       countryControl.clearValidators();
 
+      incomeBracketControl.clearValidators();
+
       confirmPasswordControl.clearValidators();
 
       termsControl.clearValidators();
 
+
     }
 
-    // =======================================================
-    // REGISTER
-    // =======================================================
+    else{
 
-    else {
 
       nameControl.setValidators(
         Validators.required
       );
 
+
       countryControl.setValidators(
         Validators.required
       );
+
+
+      incomeBracketControl.setValidators(
+        Validators.required
+      );
+
 
       confirmPasswordControl.setValidators(
         Validators.required
       );
 
+
       termsControl.setValidators(
         Validators.requiredTrue
       );
 
+
     }
 
 
-    // =======================================================
-    // UPDATE VALIDITY
-    // =======================================================
 
     nameControl.updateValueAndValidity();
 
     countryControl.updateValueAndValidity();
 
+    incomeBracketControl.updateValueAndValidity();
+
     confirmPasswordControl.updateValueAndValidity();
 
     termsControl.updateValueAndValidity();
 
+
   }
+    private resetForm(): void {
 
-
-  // =========================================================
-  // RESET FORM
-  // =========================================================
-
-  private resetForm(): void {
 
     this.authForm.reset({
 
@@ -248,6 +269,8 @@ export class Auth {
       email: '',
 
       country: '',
+
+      incomeBracket: '',
 
       password: '',
 
@@ -266,116 +289,130 @@ export class Auth {
 
     this.forgotEmail = '';
 
+
   }
 
 
-  // =========================================================
-  // SWITCH LOGIN / REGISTER
-  // =========================================================
+
+
 
   switchMode(): void {
+
 
     this.closeForgotPassword();
 
     this.hideToast();
 
 
-    // =======================================================
-    // LOGIN → REGISTER
-    // =======================================================
 
-    if (this.isLogin) {
+    if(this.isLogin){
+
 
       this.router.navigate([
+
         '/register'
+
       ]);
+
 
     }
 
-    // =======================================================
-    // REGISTER → LOGIN
-    // =======================================================
+    else{
 
-    else {
 
       this.router.navigate([
+
         '/login'
+
       ]);
 
+
     }
+
 
   }
 
 
-  // =========================================================
-  // PASSWORD VISIBILITY
-  // =========================================================
+
+
 
   togglePassword(): void {
 
+
     this.showPassword =
+
       !this.showPassword;
+
 
   }
 
 
-  // =========================================================
-  // CONFIRM PASSWORD VISIBILITY
-  // =========================================================
+
+
 
   toggleConfirmPassword(): void {
 
+
     this.showConfirmPassword =
+
       !this.showConfirmPassword;
+
 
   }
 
 
-  // =========================================================
-  // FORGOT PASSWORD - OPEN
-  // =========================================================
+
+
 
   openForgotPassword(): void {
 
+
     this.showForgotPassword = true;
 
+
     this.forgotEmail =
+
       this.authForm.controls.email.value || '';
+
 
   }
 
 
-  // =========================================================
-  // FORGOT PASSWORD - CLOSE
-  // =========================================================
+
+
 
   closeForgotPassword(): void {
 
+
     this.showForgotPassword = false;
 
+
     this.forgotEmail = '';
+
 
   }
 
 
-  // =========================================================
-  // SEND RESET LINK
-  // =========================================================
+
+
 
   sendResetLink(): void {
 
+
     const email =
+
       this.forgotEmail.trim();
 
 
-    // =======================================================
-    // VALIDATE EMAIL
-    // =======================================================
 
-    if (
+    if(
+
       !email ||
+
       !this.isValidEmail(email)
-    ) {
+
+    ){
+
 
       this.showToastMessage(
 
@@ -385,71 +422,72 @@ export class Auth {
 
       );
 
+
       return;
+
 
     }
 
 
-    // =======================================================
-    // DEMO RESET REQUEST
-    // =======================================================
 
     console.log(
-      'Password reset requested for:',
+
+      'Reset password request:',
+
       email
+
     );
 
 
-    // =======================================================
-    // CLOSE FORGOT PASSWORD BOX
-    // =======================================================
 
     this.closeForgotPassword();
 
 
-    // =======================================================
-    // SUCCESS TOAST
-    // =======================================================
 
     this.showToastMessage(
 
-      'Password reset link sent to your registered email.',
+      'Password reset link sent to your email.',
 
       'success'
 
     );
 
+
   }
 
 
-  // =========================================================
-  // EMAIL VALIDATION
-  // =========================================================
+
+
 
   private isValidEmail(
-    email: string
-  ): boolean {
+
+    email:string
+
+  ):boolean{
+
 
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+
       email
+
     );
+
 
   }
 
 
-  // =========================================================
-  // SUBMIT
-  // =========================================================
+
+
 
   onSubmit(): void {
 
-    // =======================================================
-    // FORM VALIDATION
-    // =======================================================
 
-    if (this.authForm.invalid) {
+
+    if(this.authForm.invalid){
+
 
       this.authForm.markAllAsTouched();
+
 
 
       this.showToastMessage(
@@ -463,38 +501,42 @@ export class Auth {
 
       return;
 
+
     }
 
 
-    // =======================================================
-    // REGISTER
-    // =======================================================
 
-    if (!this.isLogin) {
+
+
+    // REGISTER
+
+    if(!this.isLogin){
+
+
 
       const password =
+
         this.authForm.controls.password.value;
 
+
+
       const confirmPassword =
+
         this.authForm.controls.confirmPassword.value;
 
 
-      // =====================================================
-      // PASSWORD MATCH CHECK
-      // =====================================================
 
-      if (
-        password !== confirmPassword
-      ) {
+
+      if(password !== confirmPassword){
+
+
 
         this.authForm.controls.confirmPassword.setErrors({
 
-          passwordMismatch: true
+          passwordMismatch:true
 
         });
 
-
-        this.authForm.controls.confirmPassword.markAsTouched();
 
 
         this.showToastMessage(
@@ -508,121 +550,335 @@ export class Auth {
 
         return;
 
+
       }
 
 
-      // =====================================================
-      // REGISTRATION SUBMITTED
-      // =====================================================
-
-      console.log(
-
-        'Registration form submitted:',
-
-        this.authForm.value
-
-      );
 
 
-      // =====================================================
-      // REGISTRATION SUCCESS TOAST
-      // =====================================================
-
-      this.showToastMessage(
-
-        'Registration successful! Redirecting to login...',
-
-        'success'
-
-      );
+      const registerData = {
 
 
-      // =====================================================
-      // REDIRECT TO LOGIN
-      // =====================================================
+        name:
 
-      setTimeout(() => {
+          this.authForm.controls.name.value,
 
-        this.router.navigate([
-          '/login'
-        ]);
 
-      }, 1800);
+        email:
+
+          this.authForm.controls.email.value,
+
+
+        country:
+
+          this.authForm.controls.country.value,
+
+
+        incomeBracket:
+
+          this.authForm.controls.incomeBracket.value,
+
+
+        password
+
+
+      };
+
+
+
+
+
+      this.apiService.register(registerData)
+
+      .subscribe({
+
+
+
+        next:(response:any)=>{
+
+
+          console.log(
+
+            'Registration success',
+
+            response
+
+          );
+
+
+
+          this.showToastMessage(
+
+            'Registration successful. Please login.',
+
+            'success'
+
+          );
+
+
+
+          setTimeout(()=>{
+
+
+            this.router.navigate([
+
+              '/login'
+
+            ]);
+
+
+
+          },1500);
+
+
+
+        },
+
+
+
+        error:(error:any)=>{
+
+
+          console.log(error);
+
+
+
+          this.showToastMessage(
+
+            error?.error?.message ||
+
+            'Registration failed.',
+
+            'error'
+
+          );
+
+
+        }
+
+
+      });
+
 
 
       return;
 
+
     }
+        // LOGIN
+
+    const loginData = {
 
 
-    // =======================================================
-    // LOGIN
-    // =======================================================
+      email:
 
-    console.log(
-
-      'Login form submitted:',
-
-      this.authForm.value
-
-    );
+        this.authForm.controls.email.value,
 
 
-    // =======================================================
-    // LOGIN SUCCESS TOAST
-    // =======================================================
+      password:
 
-    this.showToastMessage(
+        this.authForm.controls.password.value
 
-      'Login successful! Welcome back to TaxPal.',
 
-      'success'
+    };
 
-    );
+
+
+
+
+    this.apiService.login(loginData)
+
+    .subscribe({
+
+
+
+      next:(response:any)=>{
+
+
+        console.log(
+
+          'Login success',
+
+          response
+
+        );
+
+
+
+        const token =
+
+          response.token ||
+
+          response.data?.token;
+
+
+
+        const user =
+
+          response.user ||
+
+          response.data?.user;
+
+
+
+
+        if(token){
+
+
+          this.apiService.saveToken(
+
+            token
+
+          );
+
+
+        }
+
+
+
+
+        if(user){
+
+
+          this.apiService.saveUser(
+
+            user
+
+          );
+
+
+        }
+
+
+
+
+
+        this.showToastMessage(
+
+          'Login successful! Welcome back to TaxPal.',
+
+          'success'
+
+        );
+
+
+
+
+
+        setTimeout(()=>{
+
+
+          this.router.navigate([
+
+            '/dashboard'
+
+          ]);
+
+
+
+        },1200);
+
+
+
+      },
+
+
+
+
+      error:(error:any)=>{
+
+
+        console.log(
+
+          'Login error',
+
+          error
+
+        );
+
+
+
+        this.showToastMessage(
+
+          error?.error?.message ||
+
+          'Invalid email or password.',
+
+          'error'
+
+        );
+
+
+
+      }
+
+
+
+    });
+
+
 
   }
 
 
-  // =========================================================
+
+
+
+
+
+
   // SHOW TOAST
-  // =========================================================
 
   private showToastMessage(
 
-    message: string,
+    message:string,
 
-    type: 'success' | 'error'
+    type:'success'|'error'
 
-  ): void {
+  ):void{
+
 
     this.toastMessage = message;
 
+
     this.toastType = type;
+
 
     this.showToast = true;
 
 
-    // =======================================================
-    // AUTO HIDE AFTER 3.5 SECONDS
-    // =======================================================
 
-    setTimeout(() => {
+
+
+    setTimeout(()=>{
+
 
       this.hideToast();
 
-    }, 3500);
+
+
+    },3500);
+
+
 
   }
 
 
-  // =========================================================
-  // HIDE TOAST
-  // =========================================================
 
-  hideToast(): void {
+
+
+
+
+  // HIDE TOAST
+
+  hideToast():void{
+
 
     this.showToast = false;
 
+
   }
+
+
 
 }

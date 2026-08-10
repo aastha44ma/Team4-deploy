@@ -76,19 +76,62 @@ const createBudget = async (req, res) => {
 // Get All Budgets
 const getAllBudgets = async (req, res) => {
     try {
+        const { month } = req.query;
+
+        const whereCondition = {
+            userId: req.user.userId
+        };
+
+        if (month) {
+            whereCondition.month = month;
+        }
         const budgets = await prisma.budget.findMany({
-            where: {
-                userId: req.user.userId
-            },
+            where: whereCondition,
             orderBy: {
                 id: "desc"
             }
         });
 
+        const budgetsWithStats = await Promise.all(
+
+            budgets.map(async (budget) => {
+
+                const transactions = await prisma.transaction.findMany({
+
+                    where: {
+                        userId: req.user.userId,
+                        category: budget.category
+                    }
+
+                });
+
+                const spent = transactions.reduce(
+                    (sum, t) => sum + Number(t.amount),
+                    0
+                );
+
+                const remaining = Number(budget.limit) - spent;
+
+                const percentage =
+                    Number(budget.limit) > 0
+                        ? Math.round((spent / Number(budget.limit)) * 100)
+                        : 0;
+
+                return {
+                    ...budget,
+                    spent,
+                    remaining,
+                    percentage
+                };
+
+            })
+
+        );
+
         return res.status(200).json({
             success: true,
-            count: budgets.length,
-            budgets
+            count: budgetsWithStats.length,
+            budgets: budgetsWithStats
         });
 
     } catch (error) {
@@ -100,8 +143,6 @@ const getAllBudgets = async (req, res) => {
         });
     }
 };
-
-
 // Get Budget By ID
 const getBudgetById = async (req, res) => {
     try {
