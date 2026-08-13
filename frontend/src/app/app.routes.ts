@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
@@ -13,7 +12,6 @@ export const routes: Routes = [
     redirectTo: 'login',
     pathMatch: 'full'
   },
-
 
   // =========================
   // PUBLIC ROUTES
@@ -32,7 +30,6 @@ export const routes: Routes = [
       import('./pages/auth/auth')
         .then(m => m.Auth)
   },
-
 
   // =========================
   // PROTECTED ROUTES
@@ -86,11 +83,6 @@ export const routes: Routes = [
         .then(m => m.TaxCalculator)
   },
 
-
-  // =========================
-  // PROFILE
-  // =========================
-
   {
     path: 'profile',
     canActivate: [authGuard],
@@ -98,7 +90,6 @@ export const routes: Routes = [
       import('./pages/profile/profile')
         .then(m => m.Profile)
   },
-
 
   // =========================
   // UNKNOWN ROUTES

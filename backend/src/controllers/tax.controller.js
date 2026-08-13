@@ -86,6 +86,7 @@ const calculateTax = (taxableIncome, taxRegime) => {
   };
 };
 
+
 // ==============================
 // Create Tax Estimate
 // ==============================
@@ -99,6 +100,7 @@ const createTaxEstimate = async (req, res) => {
       taxableIncome
     } = req.body;
 
+    // Validate required fields
     if (
       !country ||
       !region ||
@@ -113,15 +115,20 @@ const createTaxEstimate = async (req, res) => {
       });
     }
 
+    // Validate taxable income
     const income = Number(taxableIncome);
 
-    if (Number.isNaN(income) || income < 0) {
+    if (
+      !Number.isFinite(income) ||
+      income < 0
+    ) {
       return res.status(400).json({
         success: false,
         message: "Taxable income must be a valid non-negative number"
       });
     }
 
+    // Validate tax regime
     if (!["new", "old"].includes(taxRegime)) {
       return res.status(400).json({
         success: false,
@@ -129,11 +136,13 @@ const createTaxEstimate = async (req, res) => {
       });
     }
 
+    // Calculate tax using existing project tax logic
     const calculation = calculateTax(
       income,
       taxRegime
     );
 
+    // Save tax estimate
     const taxEstimate = await prisma.taxEstimate.create({
       data: {
         annualIncome: income,
@@ -143,7 +152,7 @@ const createTaxEstimate = async (req, res) => {
       }
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Tax estimate calculated successfully",
 
@@ -160,15 +169,17 @@ const createTaxEstimate = async (req, res) => {
 
       taxEstimate
     });
+
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Internal Server Error"
     });
   }
 };
+
 
 // ==============================
 // Get All Tax Estimates
@@ -185,32 +196,42 @@ const getAllTaxEstimates = async (req, res) => {
         }
       });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: taxEstimates.length,
       taxEstimates
     });
+
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Internal Server Error"
     });
   }
 };
 
+
 // ==============================
 // Get Single Tax Estimate
 // ==============================
 const getTaxEstimateById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+
+    // Validate ID
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid tax estimate ID"
+      });
+    }
 
     const taxEstimate =
       await prisma.taxEstimate.findFirst({
         where: {
-          id: Number(id),
+          id,
           userId: req.user.userId
         }
       });
@@ -222,31 +243,41 @@ const getTaxEstimateById = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       taxEstimate
     });
+
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Internal Server Error"
     });
   }
 };
 
+
 // ==============================
 // Delete Tax Estimate
 // ==============================
 const deleteTaxEstimate = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+
+    // Validate ID
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid tax estimate ID"
+      });
+    }
 
     const taxEstimate =
       await prisma.taxEstimate.findFirst({
         where: {
-          id: Number(id),
+          id,
           userId: req.user.userId
         }
       });
@@ -260,24 +291,29 @@ const deleteTaxEstimate = async (req, res) => {
 
     await prisma.taxEstimate.delete({
       where: {
-        id: Number(id)
+        id
       }
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Tax estimate deleted successfully"
     });
+
   } catch (error) {
     console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Internal Server Error"
     });
   }
 };
 
+
+// ==============================
+// EXPORTS
+// ==============================
 module.exports = {
   createTaxEstimate,
   getAllTaxEstimates,
