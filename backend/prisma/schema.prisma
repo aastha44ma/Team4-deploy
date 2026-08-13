@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,61 +7,72 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id             Int      @id @default(autoincrement())
-  name           String
-  email          String   @unique
-  password       String
-  country        String
-  incomeBracket  String
-
-  transactions   Transaction[]
-  budgets        Budget[]
-  taxEstimates   TaxEstimate[]
-  reports        Report[]
-}
-
-model Transaction {
-  id        Int      @id @default(autoincrement())
-  type      String
-  category  String
-  amount    Float
-  date      DateTime
-
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-}
-
-model Budget {
-  id          Int      @id @default(autoincrement())
+model budget {
+  id          Int     @id @default(autoincrement())
   category    String
   limit       Float
   month       String
+  userId      Int
   description String?
+  user        user    @relation(fields: [userId], references: [id], map: "Budget_userId_fkey")
 
-  userId      Int
-  user        User @relation(fields: [userId], references: [id])
-
-  @@unique([userId, category, month])
+  @@unique([userId, category, month], map: "Budget_userId_category_month_key")
 }
 
-model TaxEstimate {
-  id             Int      @id @default(autoincrement())
+model category {
+  id     Int    @id @default(autoincrement())
+  name   String
+  type   String
+  userId Int
+  user   user   @relation(fields: [userId], references: [id], map: "Category_userId_fkey")
 
-  annualIncome   Float
-  quarter        String
-  estimatedTax   Float
-
-  userId         Int
-  user           User     @relation(fields: [userId], references: [id])
+  @@unique([userId, name, type], map: "Category_userId_name_type_key")
 }
 
-model Report {
-  id          Int      @id @default(autoincrement())
-  period      String
-  reportType  String
-  filePath    String
+model report {
+  id         Int    @id @default(autoincrement())
+  period     String
+  reportType String
+  filePath   String
+  userId     Int
+  user       user   @relation(fields: [userId], references: [id], map: "Report_userId_fkey")
 
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id])
+  @@index([userId], map: "Report_userId_fkey")
+}
+
+model taxestimate {
+  id           Int    @id @default(autoincrement())
+  annualIncome Float
+  quarter      String
+  estimatedTax Float
+  userId       Int
+  user         user   @relation(fields: [userId], references: [id], map: "TaxEstimate_userId_fkey")
+
+  @@index([userId], map: "TaxEstimate_userId_fkey")
+}
+
+model transaction {
+  id       Int      @id @default(autoincrement())
+  type     String
+  category String
+  amount   Float
+  date     DateTime
+  userId   Int
+  user     user     @relation(fields: [userId], references: [id], map: "Transaction_userId_fkey")
+
+  @@index([userId], map: "Transaction_userId_fkey")
+}
+
+model user {
+  id            Int           @id @default(autoincrement())
+  name          String
+  email         String        @unique(map: "User_email_key")
+  password      String
+  country       String
+  incomeBracket String
+  budget        budget[]
+  category      category[]
+  report        report[]
+  taxestimate   taxestimate[]
+  transaction   transaction[]
 }

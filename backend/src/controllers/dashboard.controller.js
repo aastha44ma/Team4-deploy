@@ -4,7 +4,7 @@ const prisma = require("../config/prisma");
 
 const getDashboard = async (req, res) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     // User
     const user = await prisma.user.findUnique({

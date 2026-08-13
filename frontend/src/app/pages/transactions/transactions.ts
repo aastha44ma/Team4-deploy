@@ -29,39 +29,21 @@ export class Transactions implements OnInit {
   isOtherCategory = false;
 
   category = '';
+incomeCategories: string[] = [
+  'Salary',
+  'Freelancing',
+  'Consulting',
+  'Other'
+];
 
-  incomeCategories = [
-
-    'Salary',
-    'Freelancing',
-    'Consulting',
-    'Investment',
-    'Bonus',
-    'Refund',
-    'Other'
-
-  ];
-
-  expenseCategories = [
-
-    'Office Supplies',
-    'Software & SaaS',
-    'Hardware & Equipment',
-    'Internet & Communication',
-    'Travel & Transportation',
-    'Food & Client Meetings',
-    'Marketing & Advertising',
-    'Professional Services',
-    'Learning & Courses',
-    'Subscriptions',
-    'Bank Charges & Fees',
-    'Insurance',
-    'Taxes',
-    'Rent & Workspace',
-    'Utilities',
-    'Other'
-
-  ];
+expenseCategories: string[] = [
+  'Office Supplies',
+  'Software & SaaS',
+  'Travel & Transportation',
+  'Other'
+];
+// incomeCategories: string[] = [];
+// expenseCategories: string[] = [];
 
   amount: number | null = null;
   transactionDate = '';
@@ -107,7 +89,8 @@ export class Transactions implements OnInit {
     // Today's Date
     this.transactionDate = new Date().toISOString().split('T')[0];
 
-    this.loadTransactions();
+    this.loadCategories();
+this.loadTransactions();
   }
 
   toggleTheme() {
@@ -122,6 +105,82 @@ export class Transactions implements OnInit {
       localStorage.setItem('theme', 'dark');
     }
   }
+loadCategories() {
+
+  console.log('🔍 Loading categories for Transactions...');
+
+  this.api.getCategories().subscribe({
+
+    next: (res: any) => {
+
+      console.log('🔍 CATEGORY API RESPONSE:', res);
+
+      if (!res || !Array.isArray(res.categories)) {
+        console.warn('⚠️ Invalid category response. Keeping hardcoded categories.');
+        return;
+      }
+
+      const apiIncomeCategories = res.categories
+        .filter(
+          (cat: any) =>
+            String(cat.type).toLowerCase() === 'income'
+        )
+        .map(
+          (cat: any) => cat.name
+        );
+
+      const apiExpenseCategories = res.categories
+        .filter(
+          (cat: any) =>
+            String(cat.type).toLowerCase() === 'expense'
+        )
+        .map(
+          (cat: any) => cat.name
+        );
+
+      // Keep hardcoded + add API categories
+      this.incomeCategories = [
+        ...new Set([
+          ...this.incomeCategories,
+          ...apiIncomeCategories
+        ])
+      ];
+
+      this.expenseCategories = [
+        ...new Set([
+          ...this.expenseCategories,
+          ...apiExpenseCategories
+        ])
+      ];
+
+      console.log(
+        '🔍 FINAL INCOME CATEGORIES:',
+        this.incomeCategories
+      );
+
+      console.log(
+        '🔍 FINAL EXPENSE CATEGORIES:',
+        this.expenseCategories
+      );
+
+      this.cdr.detectChanges();
+
+    },
+
+    error: (err: any) => {
+
+      console.error(
+        '❌ CATEGORY API ERROR:',
+        err
+      );
+
+      // Hardcoded categories remain available
+    }
+
+  });
+
+}
+
   loadTransactions() {
 
     console.log("load called");
@@ -130,19 +189,20 @@ export class Transactions implements OnInit {
 
     this.api.getTransactions().subscribe({
 
-      next: (res: any) => {
+    next: (res: any) => {
 
-        console.log("API DATA", res);
+  console.log("API DATA", res);
 
-        this.transactions = [...(res.transactions || [])];
+  this.transactions = [...(res.transactions || [])];
 
-        this.isLoading = false;
+  this.isLoading = false;
 
-        console.log("FINAL ARRAY", this.transactions);
+  console.log("FINAL ARRAY", this.transactions);
+  console.log("LENGTH", this.transactions.length);
 
-        this.cdr.detectChanges();
+  this.cdr.detectChanges();
 
-      },
+},
 
       error: (err) => {
 

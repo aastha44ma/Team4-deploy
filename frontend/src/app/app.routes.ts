@@ -1,20 +1,17 @@
 import { Routes } from '@angular/router';
-import { Dashboard } from './pages/dashboard/dashboard';
-import { Transactions } from './pages/transactions/transactions';
-import { Budgets } from './pages/budgets/budgets';
-import { TaxCalculator } from './pages/tax-calculator/tax-calculator';
-import { Profile } from './pages/profile/profile';
-
 import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
+
+  // =========================
+  // DEFAULT ROUTE
+  // =========================
 
   {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full'
   },
-
 
   // =========================
   // PUBLIC ROUTES
@@ -27,7 +24,6 @@ export const routes: Routes = [
         .then(m => m.Auth)
   },
 
-
   {
     path: 'register',
     loadComponent: () =>
@@ -35,12 +31,9 @@ export const routes: Routes = [
         .then(m => m.Auth)
   },
 
-
-
   // =========================
   // PROTECTED ROUTES
   // =========================
-
 
   {
     path: 'dashboard',
@@ -50,7 +43,6 @@ export const routes: Routes = [
         .then(m => m.Dashboard)
   },
 
-
   {
     path: 'income',
     canActivate: [authGuard],
@@ -59,7 +51,6 @@ export const routes: Routes = [
         .then(m => m.Income)
   },
 
-
   {
     path: 'expense',
     canActivate: [authGuard],
@@ -67,7 +58,6 @@ export const routes: Routes = [
       import('./pages/expense/expense')
         .then(m => m.Expense)
   },
-
 
   {
     path: 'transactions',
@@ -92,7 +82,7 @@ export const routes: Routes = [
       import('./pages/tax-calculator/tax-calculator')
         .then(m => m.TaxCalculator)
   },
-  
+
   {
     path: 'profile',
     canActivate: [authGuard],
@@ -101,7 +91,9 @@ export const routes: Routes = [
         .then(m => m.Profile)
   },
 
-
+  // =========================
+  // UNKNOWN ROUTES
+  // =========================
 
   {
     path: '**',

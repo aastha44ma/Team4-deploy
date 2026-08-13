@@ -26,6 +26,7 @@ app.use(
     ]
   })
 );
+
 app.use(express.json());
 
 
@@ -41,9 +42,14 @@ const taxRoutes = require("./routes/tax.routes");
 const reportRoutes = require("./routes/report.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const exportRoutes = require("./routes/export.routes");
+const categoryRoutes = require("./routes/category.routes");
 
 const errorHandler = require("./middleware/error.middleware");
 
+
+// =======================================================
+// API Routes
+// =======================================================
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
@@ -53,6 +59,7 @@ app.use("/api/tax-estimates", taxRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/export", exportRoutes);
+app.use("/api/categories", categoryRoutes);
 
 
 // =======================================================
@@ -60,9 +67,7 @@ app.use("/api/export", exportRoutes);
 // =======================================================
 
 app.get("/", (req, res) => {
-
   res.send("🚀 TaxPal Backend API is Running...");
-
 });
 
 
@@ -71,15 +76,10 @@ app.get("/", (req, res) => {
 // =======================================================
 
 app.use((req, res) => {
-
   res.status(404).json({
-
     success: false,
-
     message: "Route Not Found"
-
   });
-
 });
 
 

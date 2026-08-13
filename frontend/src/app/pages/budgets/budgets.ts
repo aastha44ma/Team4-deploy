@@ -54,11 +54,11 @@ export class Budgets implements OnInit {
   showCreateModal = false;
 
 
- constructor(
-  private api: ApiService,
-  private router: Router,
-  private cdr: ChangeDetectorRef
-) { }
+  constructor(
+    private api: ApiService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) { }
 
 
 
@@ -126,13 +126,16 @@ export class Budgets implements OnInit {
 
 
 
-
   loadBudgetsAndSettings() {
 
     this.isLoading = true;
     this.errorMessage = '';
 
+    // Keep existing hardcoded expense categories
     this.setDefaultCategories();
+
+    // Add backend expense categories
+    this.loadExpenseCategories();
 
     this.fetchBudgets();
 
@@ -141,32 +144,90 @@ export class Budgets implements OnInit {
 
 
 
-
   setDefaultCategories() {
 
     this.expenseCategories = [
-
       'Office Supplies',
       'Software & SaaS',
-      'Hardware & Equipment',
-      'Internet & Communication',
       'Travel & Transportation',
-      'Food & Client Meetings',
-      'Marketing & Advertising',
-      'Professional Services',
-      'Learning & Courses',
-      'Subscriptions',
-      'Bank Charges & Fees',
-      'Insurance',
-      'Taxes',
-      'Rent & Workspace',
-      'Utilities',
       'Other'
 
     ];
 
   }
+  loadExpenseCategories() {
 
+    console.log('🔍 Loading expense categories for Budgets...');
+
+    this.api.getCategories().subscribe({
+
+      next: (res: any) => {
+
+        console.log('🔍 CATEGORY API RESPONSE:', res);
+
+        if (!res || !Array.isArray(res.categories)) {
+
+          console.warn(
+            '⚠️ Invalid category response. Keeping hardcoded categories.'
+          );
+
+          this.availableCategories =
+            this.getAvailableCategories();
+
+          return;
+        }
+
+        const apiExpenseCategories = res.categories
+          .filter(
+            (cat: any) =>
+              String(cat.type).toLowerCase() === 'expense'
+          )
+          .map(
+            (cat: any) => cat.name
+          );
+
+        console.log(
+          '🔍 API EXPENSE CATEGORIES:',
+          apiExpenseCategories
+        );
+
+        // Keep hardcoded categories + add backend categories
+        this.expenseCategories = [
+          ...new Set([
+            ...this.expenseCategories,
+            ...apiExpenseCategories
+          ])
+        ];
+
+        console.log(
+          '🔍 FINAL BUDGET EXPENSE CATEGORIES:',
+          this.expenseCategories
+        );
+
+        // Recalculate available categories
+        this.availableCategories =
+          this.getAvailableCategories();
+
+        this.cdr.detectChanges();
+
+      },
+
+      error: (err: any) => {
+
+        console.error(
+          '❌ CATEGORY API ERROR:',
+          err
+        );
+
+        // Keep hardcoded categories as fallback
+        this.availableCategories =
+          this.getAvailableCategories();
+
+      }
+
+    });
+
+  }
 
 
 
@@ -177,13 +238,13 @@ export class Budgets implements OnInit {
     this.api.getBudgets(this.selectedViewMonth)
       .subscribe({
 
-        next:(res:any)=>{
+        next: (res: any) => {
 
 
           this.isLoading = false;
 
 
-          if(!res || !res.success){
+          if (!res || !res.success) {
 
             this.budgets = [];
             return;
@@ -193,23 +254,23 @@ export class Budgets implements OnInit {
 
           this.budgets = Array.isArray(res.budgets)
             ? res.budgets.sort(
-                (a:any,b:any)=>Number(b.limit)-Number(a.limit)
-              )
+              (a: any, b: any) => Number(b.limit) - Number(a.limit)
+            )
             : [];
 
 
 
           this.availableCategories =
-  this.getAvailableCategories();
+            this.getAvailableCategories();
 
-this.cdr.detectChanges();
+          this.cdr.detectChanges();
 
 
 
         },
 
 
-        error:(err:any)=>{
+        error: (err: any) => {
 
 
           this.isLoading = false;
@@ -217,8 +278,8 @@ this.cdr.detectChanges();
           this.budgets = [];
 
           this.errorMessage =
-          err?.error?.message ||
-          "Failed to load budget data.";
+            err?.error?.message ||
+            "Failed to load budget data.";
 
 
         }
@@ -233,15 +294,15 @@ this.cdr.detectChanges();
 
 
 
-  getAvailableCategories():string[] {
+  getAvailableCategories(): string[] {
 
 
-    return this.expenseCategories.filter(category=>{
+    return this.expenseCategories.filter(category => {
 
 
       const exists = this.budgets.some(
         budget =>
-        budget.category.toLowerCase() === category.toLowerCase()
+          budget.category.toLowerCase() === category.toLowerCase()
       );
 
 
@@ -257,20 +318,20 @@ this.cdr.detectChanges();
 
 
 
-  openCreateModal(){
+  openCreateModal() {
 
 
     this.availableCategories =
-    this.getAvailableCategories();
+      this.getAvailableCategories();
 
 
-    this.newCategory='';
-    this.newBudgetLimit=null;
-    this.newMonth=this.selectedViewMonth;
-    this.newDescription='';
+    this.newCategory = '';
+    this.newBudgetLimit = null;
+    this.newMonth = this.selectedViewMonth;
+    this.newDescription = '';
 
 
-    this.showCreateModal=true;
+    this.showCreateModal = true;
 
 
   }
@@ -278,9 +339,9 @@ this.cdr.detectChanges();
 
 
 
-  closeCreateModal(){
+  closeCreateModal() {
 
-    this.showCreateModal=false;
+    this.showCreateModal = false;
 
   }
 
@@ -288,25 +349,25 @@ this.cdr.detectChanges();
 
 
   startEditBudget(
-    id:number,
-    category:string,
-    currentLimit:number
-  ){
+    id: number,
+    category: string,
+    currentLimit: number
+  ) {
 
 
-    this.editingBudgetId=id;
-    this.editingCategory=category;
-    this.editingLimit=currentLimit;
+    this.editingBudgetId = id;
+    this.editingCategory = category;
+    this.editingLimit = currentLimit;
 
 
     const found =
-    this.budgets.find(
-      b=>b.category===category
-    );
+      this.budgets.find(
+        b => b.category === category
+      );
 
 
     this.editingDescription =
-    found?.description || '';
+      found?.description || '';
 
 
   }
@@ -315,12 +376,12 @@ this.cdr.detectChanges();
 
 
 
-  cancelEditBudget(){
+  cancelEditBudget() {
 
-    this.editingBudgetId=null;
-    this.editingCategory='';
-    this.editingLimit=null;
-    this.editingDescription='';
+    this.editingBudgetId = null;
+    this.editingCategory = '';
+    this.editingLimit = null;
+    this.editingDescription = '';
 
   }
 
@@ -328,28 +389,28 @@ this.cdr.detectChanges();
 
 
 
-  saveBudgetLimit(){
+  saveBudgetLimit() {
 
 
-    if(this.editingLimit===null ||
-       this.editingLimit<0){
+    if (this.editingLimit === null ||
+      this.editingLimit < 0) {
 
       return;
 
     }
 
 
-    const payload={
+    const payload = {
 
-      category:this.editingCategory,
-      limit:Number(this.editingLimit),
-      month:this.selectedViewMonth,
-      description:this.editingDescription
+      category: this.editingCategory,
+      limit: Number(this.editingLimit),
+      month: this.selectedViewMonth,
+      description: this.editingDescription
 
     };
 
 
-    this.isSavingBudget=true;
+    this.isSavingBudget = true;
 
 
 
@@ -357,24 +418,24 @@ this.cdr.detectChanges();
       this.editingBudgetId!,
       payload
     )
-    .subscribe({
+      .subscribe({
 
-      next:()=>{
+        next: () => {
 
-        this.isSavingBudget=false;
-        this.cancelEditBudget();
-        this.loadBudgetsAndSettings();
+          this.isSavingBudget = false;
+          this.cancelEditBudget();
+          this.loadBudgetsAndSettings();
 
-      },
+        },
 
 
-      error:()=>{
+        error: () => {
 
-        this.isSavingBudget=false;
+          this.isSavingBudget = false;
 
-      }
+        }
 
-    });
+      });
 
 
   }
@@ -384,109 +445,109 @@ this.cdr.detectChanges();
 
 
   deleteBudgetLimit(
-    id:number,
-    category:string
-  ){
+    id: number,
+    category: string
+  ) {
 
 
-    if(confirm(`Remove budget for ${category}?`)){
+    if (confirm(`Remove budget for ${category}?`)) {
 
 
       this.api.deleteBudget(id)
+        .subscribe({
+
+          next: () => {
+
+            this.loadBudgetsAndSettings();
+
+          }
+
+        });
+
+
+    }
+
+
+  }
+
+
+
+
+  createNewBudget() {
+
+    if (!this.newCategory ||
+      this.newBudgetLimit === null) {
+
+      return;
+
+    }
+
+
+    const payload = {
+
+      category: this.newCategory,
+      limit: Number(this.newBudgetLimit),
+      month: this.newMonth,
+      description: this.newDescription
+
+    };
+
+
+    this.isCreatingBudget = true;
+
+
+    this.api.createBudget(payload)
       .subscribe({
 
-        next:()=>{
+        next: (res: any) => {
 
-          this.loadBudgetsAndSettings();
+          console.log("Budget Created:", res);
+
+
+          this.isCreatingBudget = false;
+
+
+          this.showCreateModal = false;
+
+
+          // clear form
+          this.newCategory = '';
+          this.newBudgetLimit = null;
+          this.newDescription = '';
+
+
+          // reload budgets
+          this.fetchBudgets();
+
+
+        },
+
+
+        error: (err: any) => {
+
+          console.error("Create Budget Error:", err);
+
+
+          this.isCreatingBudget = false;
+
+
+        },
+
+
+        complete: () => {
+
+          // safety reset
+          this.isCreatingBudget = false;
 
         }
+
 
       });
 
 
-    }
-
-
   }
 
-
-
-
-createNewBudget() {
-
-  if (!this.newCategory ||
-      this.newBudgetLimit === null) {
-
-    return;
-
-  }
-
-
-  const payload = {
-
-    category: this.newCategory,
-    limit: Number(this.newBudgetLimit),
-    month: this.newMonth,
-    description: this.newDescription
-
-  };
-
-
-  this.isCreatingBudget = true;
-
-
-  this.api.createBudget(payload)
-  .subscribe({
-
-    next: (res:any) => {
-
-      console.log("Budget Created:", res);
-
-
-      this.isCreatingBudget = false;
-
-
-      this.showCreateModal = false;
-
-
-      // clear form
-      this.newCategory = '';
-      this.newBudgetLimit = null;
-      this.newDescription = '';
-
-
-      // reload budgets
-      this.fetchBudgets();
-
-
-    },
-
-
-    error: (err:any) => {
-
-      console.error("Create Budget Error:", err);
-
-
-      this.isCreatingBudget = false;
-
-
-    },
-
-
-    complete: () => {
-
-      // safety reset
-      this.isCreatingBudget = false;
-
-    }
-
-
-  });
-
-
-}
-
-  onViewMonthChange(){
+  onViewMonthChange() {
 
     this.loadBudgetsAndSettings();
 
@@ -496,24 +557,24 @@ createNewBudget() {
 
 
 
-  formatMonthDisplay(month:string){
+  formatMonthDisplay(month: string) {
 
 
-    if(!month) return '';
+    if (!month) return '';
 
 
-    const [year,monthNumber]=month.split('-');
+    const [year, monthNumber] = month.split('-');
 
 
-    const names=[
-      'January','February','March',
-      'April','May','June',
-      'July','August','September',
-      'October','November','December'
+    const names = [
+      'January', 'February', 'March',
+      'April', 'May', 'June',
+      'July', 'August', 'September',
+      'October', 'November', 'December'
     ];
 
 
-    return `${names[Number(monthNumber)-1]} ${year}`;
+    return `${names[Number(monthNumber) - 1]} ${year}`;
 
 
   }
@@ -522,15 +583,15 @@ createNewBudget() {
 
 
 
-  formatCurrency(amount:number){
+  formatCurrency(amount: number) {
 
 
-    return '₹'+
-    Number(amount||0)
-    .toLocaleString('en-IN',
-    {
-      minimumFractionDigits:2
-    });
+    return '₹' +
+      Number(amount || 0)
+        .toLocaleString('en-IN',
+          {
+            minimumFractionDigits: 2
+          });
 
 
   }
@@ -539,7 +600,7 @@ createNewBudget() {
 
 
 
-  logout(){
+  logout() {
 
     localStorage.removeItem('user');
     localStorage.removeItem('accessToken');

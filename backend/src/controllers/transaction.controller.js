@@ -1,12 +1,24 @@
 const prisma = require("../config/prisma");
 
+
+// =========================================================
+// CREATE TRANSACTION
+// =========================================================
+
 const createTransaction = async (req, res) => {
     try {
-        const { type, category, amount, date } = req.body;
+        const {
+            type,
+            category,
+            amount,
+            date
+        } = req.body;
 
         // Normalize transaction type
         const normalizedType =
-            typeof type === "string" ? type.trim().toLowerCase() : "";
+            typeof type === "string"
+                ? type.trim().toLowerCase()
+                : "";
 
         // Validate transaction type
         if (!["income", "expense"].includes(normalizedType)) {
@@ -46,7 +58,10 @@ const createTransaction = async (req, res) => {
         // Validate date
         const transactionDate = new Date(date);
 
-        if (!date || Number.isNaN(transactionDate.getTime())) {
+        if (
+            !date ||
+            Number.isNaN(transactionDate.getTime())
+        ) {
             return res.status(400).json({
                 success: false,
                 message: "Date must be a valid date"
@@ -54,21 +69,73 @@ const createTransaction = async (req, res) => {
         }
 
         // Logged-in user
-        const userId = req.user.userId;
+        const userId =
+            req.user?.id ||
+            req.user?.userId;
 
-        // Save transaction
-        const transaction = await prisma.transaction.create({
-            data: {
-                type:
-                    normalizedType === "income"
-                        ? "Income"
-                        : "Expense",
-                category: category.trim(),
-                amount: numericAmount,
-                date: transactionDate,
-                userId
-            }
+        console.log("=================================");
+        console.log("CREATE TRANSACTION");
+        console.log("req.user:", req.user);
+        console.log("userId:", userId);
+        console.log("Body:", req.body);
+        console.log("=================================");
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "User ID not found in authentication token"
+            });
+        }
+
+        // =================================================
+        // CHECK CATEGORY
+        // =================================================
+
+        const categoryExists =
+            await prisma.category.findFirst({
+                where: {
+                    name: category.trim(),
+                    userId: Number(userId),
+                    type: normalizedType
+                }
+            });
+
+        console.log("CATEGORY CHECK:", {
+            name: category.trim(),
+            type: normalizedType,
+            userId: Number(userId),
+            found: categoryExists
         });
+
+        if (!categoryExists) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Selected category does not exist for this transaction type"
+            });
+        }
+
+        // =================================================
+        // CREATE TRANSACTION
+        // =================================================
+
+        const transaction =
+            await prisma.transaction.create({
+                data: {
+                    type:
+                        normalizedType === "income"
+                            ? "Income"
+                            : "Expense",
+
+                    category: category.trim(),
+
+                    amount: numericAmount,
+
+                    date: transactionDate,
+
+                    userId: Number(userId)
+                }
+            });
 
         return res.status(201).json({
             success: true,
@@ -77,27 +144,48 @@ const createTransaction = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("=================================");
+        console.error("CREATE TRANSACTION ERROR");
+        console.error("Message:", error.message);
+        console.error("Code:", error.code);
+        console.error("Meta:", error.meta);
+        console.error("Full Error:", error);
+        console.error("=================================");
 
         return res.status(500).json({
             success: false,
-            message: "Internal Server Error"
+            message: error.message || "Internal Server Error"
         });
     }
 };
 
 
-// Get All Transactions
+// =========================================================
+// GET ALL TRANSACTIONS
+// =========================================================
+
 const getAllTransactions = async (req, res) => {
     try {
-        const transactions = await prisma.transaction.findMany({
-            where: {
-                userId: req.user.userId
-            },
-            orderBy: {
-                date: "desc"
-            }
-        });
+        const userId =
+            req.user?.id ||
+            req.user?.userId;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "User ID not found"
+            });
+        }
+
+        const transactions =
+            await prisma.transaction.findMany({
+                where: {
+                    userId: Number(userId)
+                },
+                orderBy: {
+                    date: "desc"
+                }
+            });
 
         return res.status(200).json({
             success: true,
@@ -106,7 +194,10 @@ const getAllTransactions = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error(
+            "GET TRANSACTIONS ERROR:",
+            error
+        );
 
         return res.status(500).json({
             success: false,
@@ -116,16 +207,39 @@ const getAllTransactions = async (req, res) => {
 };
 
 
+// =========================================================
+// GET TRANSACTION BY ID
+// =========================================================
+
 const getTransactionById = async (req, res) => {
     try {
         const id = Number(req.params.id);
 
-        const transaction = await prisma.transaction.findFirst({
-            where: {
-                id,
-                userId: req.user.userId
-            }
-        });
+        const userId =
+            req.user?.id ||
+            req.user?.userId;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "User ID not found"
+            });
+        }
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid transaction ID"
+            });
+        }
+
+        const transaction =
+            await prisma.transaction.findFirst({
+                where: {
+                    id,
+                    userId: Number(userId)
+                }
+            });
 
         if (!transaction) {
             return res.status(404).json({
@@ -140,7 +254,10 @@ const getTransactionById = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error(
+            "GET TRANSACTION ERROR:",
+            error
+        );
 
         return res.status(500).json({
             success: false,
@@ -150,17 +267,40 @@ const getTransactionById = async (req, res) => {
 };
 
 
+// =========================================================
+// UPDATE TRANSACTION
+// =========================================================
+
 const updateTransaction = async (req, res) => {
     try {
         const id = Number(req.params.id);
 
+        const userId =
+            req.user?.id ||
+            req.user?.userId;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "User ID not found"
+            });
+        }
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid transaction ID"
+            });
+        }
+
         // Check transaction belongs to logged-in user
-        const existingTransaction = await prisma.transaction.findFirst({
-            where: {
-                id,
-                userId: req.user.userId
-            }
-        });
+        const existingTransaction =
+            await prisma.transaction.findFirst({
+                where: {
+                    id,
+                    userId: Number(userId)
+                }
+            });
 
         if (!existingTransaction) {
             return res.status(404).json({
@@ -169,11 +309,18 @@ const updateTransaction = async (req, res) => {
             });
         }
 
-        const { type, category, amount, date } = req.body;
+        const {
+            type,
+            category,
+            amount,
+            date
+        } = req.body;
 
         // Normalize transaction type
         const normalizedType =
-            typeof type === "string" ? type.trim().toLowerCase() : "";
+            typeof type === "string"
+                ? type.trim().toLowerCase()
+                : "";
 
         // Validate transaction type
         if (!["income", "expense"].includes(normalizedType)) {
@@ -213,27 +360,53 @@ const updateTransaction = async (req, res) => {
         // Validate date
         const transactionDate = new Date(date);
 
-        if (!date || Number.isNaN(transactionDate.getTime())) {
+        if (
+            !date ||
+            Number.isNaN(transactionDate.getTime())
+        ) {
             return res.status(400).json({
                 success: false,
                 message: "Date must be a valid date"
             });
         }
 
-        const updatedTransaction = await prisma.transaction.update({
-            where: {
-                id
-            },
-            data: {
-                type:
-                    normalizedType === "income"
-                        ? "Income"
-                        : "Expense",
-                category: category.trim(),
-                amount: numericAmount,
-                date: transactionDate
-            }
-        });
+        // Check category belongs to logged-in user
+        // and matches transaction type
+        const categoryExists =
+            await prisma.category.findFirst({
+                where: {
+                    name: category.trim(),
+                    userId: Number(userId),
+                    type: normalizedType
+                }
+            });
+
+        if (!categoryExists) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Selected category does not exist for this transaction type"
+            });
+        }
+
+        const updatedTransaction =
+            await prisma.transaction.update({
+                where: {
+                    id
+                },
+                data: {
+                    type:
+                        normalizedType === "income"
+                            ? "Income"
+                            : "Expense",
+
+                    category: category.trim(),
+
+                    amount: numericAmount,
+
+                    date: transactionDate
+                }
+            });
 
         return res.status(200).json({
             success: true,
@@ -242,7 +415,10 @@ const updateTransaction = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error(
+            "UPDATE TRANSACTION ERROR:",
+            error
+        );
 
         return res.status(500).json({
             success: false,
@@ -252,16 +428,40 @@ const updateTransaction = async (req, res) => {
 };
 
 
+// =========================================================
+// DELETE TRANSACTION
+// =========================================================
+
 const deleteTransaction = async (req, res) => {
     try {
         const id = Number(req.params.id);
 
-        const existingTransaction = await prisma.transaction.findFirst({
-            where: {
-                id,
-                userId: req.user.userId
-            }
-        });
+        const userId =
+            req.user?.id ||
+            req.user?.userId;
+
+        if (!userId) {
+            return res.status(401).json({
+                success: false,
+                message: "User ID not found"
+            });
+        }
+
+        if (!Number.isInteger(id) || id <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid transaction ID"
+            });
+        }
+
+        // Check transaction belongs to logged-in user
+        const existingTransaction =
+            await prisma.transaction.findFirst({
+                where: {
+                    id,
+                    userId: Number(userId)
+                }
+            });
 
         if (!existingTransaction) {
             return res.status(404).json({
@@ -282,7 +482,10 @@ const deleteTransaction = async (req, res) => {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error(
+            "DELETE TRANSACTION ERROR:",
+            error
+        );
 
         return res.status(500).json({
             success: false,
@@ -291,6 +494,10 @@ const deleteTransaction = async (req, res) => {
     }
 };
 
+
+// =========================================================
+// EXPORT
+// =========================================================
 
 module.exports = {
     createTransaction,
