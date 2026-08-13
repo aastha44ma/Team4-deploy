@@ -87,23 +87,38 @@ const createTransaction = async (req, res) => {
             });
         }
 
-        // Check category belongs to logged-in user
+        // =================================================
+        // CHECK CATEGORY
+        // =================================================
+
         const categoryExists =
             await prisma.category.findFirst({
                 where: {
                     name: category.trim(),
-                    userId: Number(userId)
+                    userId: Number(userId),
+                    type: normalizedType
                 }
             });
+
+        console.log("CATEGORY CHECK:", {
+            name: category.trim(),
+            type: normalizedType,
+            userId: Number(userId),
+            found: categoryExists
+        });
 
         if (!categoryExists) {
             return res.status(400).json({
                 success: false,
-                message: "Selected category does not exist"
+                message:
+                    "Selected category does not exist for this transaction type"
             });
         }
 
-        // Create transaction
+        // =================================================
+        // CREATE TRANSACTION
+        // =================================================
+
         const transaction =
             await prisma.transaction.create({
                 data: {
@@ -111,9 +126,13 @@ const createTransaction = async (req, res) => {
                         normalizedType === "income"
                             ? "Income"
                             : "Expense",
+
                     category: category.trim(),
+
                     amount: numericAmount,
+
                     date: transactionDate,
+
                     userId: Number(userId)
                 }
             });
@@ -352,18 +371,21 @@ const updateTransaction = async (req, res) => {
         }
 
         // Check category belongs to logged-in user
+        // and matches transaction type
         const categoryExists =
             await prisma.category.findFirst({
                 where: {
                     name: category.trim(),
-                    userId: Number(userId)
+                    userId: Number(userId),
+                    type: normalizedType
                 }
             });
 
         if (!categoryExists) {
             return res.status(400).json({
                 success: false,
-                message: "Selected category does not exist"
+                message:
+                    "Selected category does not exist for this transaction type"
             });
         }
 
@@ -377,8 +399,11 @@ const updateTransaction = async (req, res) => {
                         normalizedType === "income"
                             ? "Income"
                             : "Expense",
+
                     category: category.trim(),
+
                     amount: numericAmount,
+
                     date: transactionDate
                 }
             });
