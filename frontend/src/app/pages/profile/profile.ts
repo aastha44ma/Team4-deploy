@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,7 +24,11 @@ export class Profile implements OnInit {
 
   isLightTheme = false;
 
-  isLoading = false;
+// Profile-specific loading
+isProfileSaving = false;
+
+// Password-specific loading
+isPasswordSaving = false;
 
   errorMessage = '';
 
@@ -85,7 +89,8 @@ export class Profile implements OnInit {
 
   constructor(
     private api: ApiService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
 
@@ -176,6 +181,11 @@ export class Profile implements OnInit {
 
       next: (user: any) => {
 
+        console.log(
+          'Profile loaded:',
+          user
+        );
+
         this.fullName =
           user.name || '';
 
@@ -191,6 +201,8 @@ export class Profile implements OnInit {
 
         // Keep localStorage synchronized
         this.api.saveUser(user);
+
+        this.cdr.detectChanges();
 
       },
 
@@ -232,6 +244,9 @@ export class Profile implements OnInit {
               user.incomeBracket ||
               '';
 
+
+            this.cdr.detectChanges();
+
           } catch (error) {
 
             console.error(
@@ -256,6 +271,7 @@ export class Profile implements OnInit {
 
   updateProfile() {
 
+    // Validate name
     if (!this.fullName.trim()) {
 
       this.errorMessage =
@@ -268,7 +284,20 @@ export class Profile implements OnInit {
     }
 
 
-    this.isLoading = true;
+    // Validate email
+    if (!this.email.trim()) {
+
+      this.errorMessage =
+        'Email is required';
+
+      this.successMessage = '';
+
+      return;
+
+    }
+
+
+    this.isProfileSaving = true;
 
     this.errorMessage = '';
 
@@ -277,7 +306,11 @@ export class Profile implements OnInit {
 
     const payload = {
 
-      name: this.fullName.trim(),
+      name:
+        this.fullName.trim(),
+
+      email:
+        this.email.trim(),
 
       country:
         this.country.trim(),
@@ -288,25 +321,46 @@ export class Profile implements OnInit {
     };
 
 
-    this.api.updateProfile(payload)
+    console.log(
+      'Updating profile:',
+      payload
+    );
+
+
+    this.api
+      .updateProfile(payload)
       .subscribe({
+
+        // =====================================================
+        // SUCCESS
+        // =====================================================
 
         next: (res: any) => {
 
-          this.isLoading = false;
+          console.log(
+            'Profile updated:',
+            res
+          );
+
+
+          this.isProfileSaving = false;
+
 
           this.successMessage =
             res?.message ||
             'Profile updated successfully';
 
 
-          // Update local storage with
-          // the returned backend user
+          this.errorMessage = '';
+
+
+          // Backend returned updated user
           if (res?.user) {
 
             this.api.saveUser(
               res.user
             );
+
 
             this.fullName =
               res.user.name || '';
@@ -320,7 +374,10 @@ export class Profile implements OnInit {
             this.incomeBracket =
               res.user.incomeBracket || '';
 
-          } else {
+          }
+
+          // Backend did not return user
+          else {
 
             const user =
               this.api.getUser();
@@ -330,6 +387,9 @@ export class Profile implements OnInit {
 
               user.name =
                 this.fullName.trim();
+
+              user.email =
+                this.email.trim();
 
               user.country =
                 this.country.trim();
@@ -344,17 +404,36 @@ export class Profile implements OnInit {
 
           }
 
+
+          this.cdr.detectChanges();
+
         },
+
+
+        // =====================================================
+        // ERROR
+        // =====================================================
 
         error: (err: any) => {
 
-          this.isLoading = false;
+          console.error(
+            'Update profile error:',
+            err
+          );
+
+
+          this.isProfileSaving = false;
+
 
           this.errorMessage =
             err?.error?.message ||
             'Failed to update profile. Please try again.';
 
+
           this.successMessage = '';
+
+
+          this.cdr.detectChanges();
 
         }
 
@@ -369,6 +448,7 @@ export class Profile implements OnInit {
 
   changePassword() {
 
+    // Validate fields
     if (
       !this.currentPassword ||
       !this.newPassword ||
@@ -385,6 +465,7 @@ export class Profile implements OnInit {
     }
 
 
+    // Confirm password
     if (
       this.newPassword !==
       this.confirmPassword
@@ -400,6 +481,7 @@ export class Profile implements OnInit {
     }
 
 
+    // Minimum password length
     if (
       this.newPassword.length < 6
     ) {
@@ -414,7 +496,7 @@ export class Profile implements OnInit {
     }
 
 
-    this.isLoading = true;
+   this.isPasswordSaving = true;
 
     this.errorMessage = '';
 
@@ -432,34 +514,75 @@ export class Profile implements OnInit {
     };
 
 
-    this.api.changePassword(payload)
+    console.log(
+      'Changing password...'
+    );
+
+
+    this.api
+      .changePassword(payload)
       .subscribe({
 
-        next: () => {
+        // ===================================================
+        // SUCCESS
+        // ===================================================
 
-          this.isLoading = false;
+        next: (res: any) => {
+
+          console.log(
+            'Password changed:',
+            res
+          );
+
+
+          this.isPasswordSaving = false;
+
 
           this.successMessage =
+            res?.message ||
             'Password changed successfully';
 
 
+          this.errorMessage = '';
+
+
+          // Clear password fields
           this.currentPassword = '';
 
           this.newPassword = '';
 
           this.confirmPassword = '';
 
+
+          this.cdr.detectChanges();
+
         },
+
+
+        // ===================================================
+        // ERROR
+        // ===================================================
 
         error: (err: any) => {
 
-          this.isLoading = false;
+          console.error(
+            'Change password error:',
+            err
+          );
+
+
+          this.isPasswordSaving = false;
+
 
           this.errorMessage =
             err?.error?.message ||
             'Failed to change password. Please check your current password.';
 
+
           this.successMessage = '';
+
+
+          this.cdr.detectChanges();
 
         }
 
@@ -487,75 +610,119 @@ export class Profile implements OnInit {
   // LOAD CATEGORIES
   // =========================================================
 
- loadCategories() {
+  loadCategories() {
 
-  console.log('🔥 Loading categories from API...');
+    console.log(
+      '🔥 Loading categories from API...'
+    );
 
-  this.api.getCategories().subscribe({
 
-    next: (res: any) => {
+    this.api
+      .getCategories()
+      .subscribe({
 
-      console.log('🔥 CATEGORY API RESPONSE:', res);
+        // ===================================================
+        // SUCCESS
+        // ===================================================
 
-      if (!res || !Array.isArray(res.categories)) {
+        next: (res: any) => {
 
-        console.error(
-          '❌ Invalid category API response:',
-          res
-        );
+          console.log(
+            '🔥 CATEGORY API RESPONSE:',
+            res
+          );
 
-        this.expenseCategories = [];
-        this.incomeCategories = [];
 
-        return;
-      }
+          if (
+            !res ||
+            !Array.isArray(res.categories)
+          ) {
 
-      const categories = res.categories;
+            console.error(
+              '❌ Invalid category API response:',
+              res
+            );
 
-      console.log(
-        '🔥 ALL CATEGORIES:',
-        categories
-      );
 
-      this.expenseCategories =
-        categories.filter(
-          (category: any) =>
-            String(category.type).toLowerCase() === 'expense'
-        );
+            this.expenseCategories = [];
 
-      this.incomeCategories =
-        categories.filter(
-          (category: any) =>
-            String(category.type).toLowerCase() === 'income'
-        );
+            this.incomeCategories = [];
 
-      console.log(
-        '🔥 EXPENSE CATEGORIES:',
-        this.expenseCategories
-      );
+            return;
 
-      console.log(
-        '🔥 INCOME CATEGORIES:',
-        this.incomeCategories
-      );
+          }
 
-    },
 
-    error: (err: any) => {
+          const categories =
+            res.categories;
 
-      console.error(
-        '❌ CATEGORY API ERROR:',
-        err
-      );
 
-      this.expenseCategories = [];
-      this.incomeCategories = [];
+          console.log(
+            '🔥 ALL CATEGORIES:',
+            categories
+          );
 
-    }
 
-  });
+          // Expense categories
+          this.expenseCategories =
+            categories.filter(
+              (category: any) =>
+                String(
+                  category.type
+                ).toLowerCase() ===
+                'expense'
+            );
 
-}
+
+          // Income categories
+          this.incomeCategories =
+            categories.filter(
+              (category: any) =>
+                String(
+                  category.type
+                ).toLowerCase() ===
+                'income'
+            );
+
+
+          console.log(
+            '🔥 EXPENSE CATEGORIES:',
+            this.expenseCategories
+          );
+
+
+          console.log(
+            '🔥 INCOME CATEGORIES:',
+            this.incomeCategories
+          );
+
+
+          this.cdr.detectChanges();
+
+        },
+
+
+        // ===================================================
+        // ERROR
+        // ===================================================
+
+        error: (err: any) => {
+
+          console.error(
+            '❌ CATEGORY API ERROR:',
+            err
+          );
+
+
+          this.expenseCategories = [];
+
+          this.incomeCategories = [];
+
+        }
+
+      });
+
+  }
 
 
   // =========================================================
@@ -573,6 +740,10 @@ export class Profile implements OnInit {
           this.successMessage =
             'Default categories initialized';
 
+
+          this.errorMessage = '';
+
+
           this.loadCategories();
 
         },
@@ -584,9 +755,13 @@ export class Profile implements OnInit {
             err
           );
 
+
           this.errorMessage =
             err?.error?.message ||
             'Failed to initialize default categories';
+
+
+          this.successMessage = '';
 
         }
 
@@ -612,57 +787,95 @@ export class Profile implements OnInit {
     }
 
 
+    // Check duplicate
     if (
       this.expenseCategories.some(
         (category: any) =>
-          category.name === name
+          String(
+            category.name
+          ).toLowerCase() ===
+          name.toLowerCase()
       )
     ) {
 
       this.errorMessage =
         'Category already exists';
 
+      this.successMessage = '';
+
       return;
 
     }
 
 
-    this.api.createCategory({
+    this.api
+      .createCategory({
 
-      name,
+        name,
 
-      type: 'expense',
+        type: 'expense',
 
-      color: '#6366f1',
+        color: '#6366f1',
 
-      icon: 'tag'
+        icon: 'tag'
 
-    }).subscribe({
+      })
+      .subscribe({
 
-      next: () => {
+        next: (res: any) => {
 
-        this.newExpenseCategory = '';
+          console.log(
+            'Expense category created:',
+            res
+          );
 
-        this.successMessage =
-          'Category added successfully';
 
-        this.errorMessage = '';
+          if (res?.category) {
 
-        this.loadCategories();
+            this.expenseCategories = [
 
-      },
+              ...this.expenseCategories,
 
-      error: (err: any) => {
+              res.category
 
-        this.errorMessage =
-          err?.error?.message ||
-          'Failed to add category';
+            ];
 
-        this.successMessage = '';
+          }
 
-      }
 
-    });
+          this.newExpenseCategory = '';
+
+
+          this.successMessage =
+            'Category added successfully';
+
+
+          this.errorMessage = '';
+
+
+          this.cdr.detectChanges();
+
+        },
+
+
+        error: (err: any) => {
+
+          console.error(
+            'Add expense category error:',
+            err
+          );
+
+
+          this.errorMessage =
+            err?.error?.message ||
+            'Failed to add category';
+
+
+          this.successMessage = '';
+
+        }
+
+      });
 
   }
 
@@ -684,57 +897,95 @@ export class Profile implements OnInit {
     }
 
 
+    // Check duplicate
     if (
       this.incomeCategories.some(
         (category: any) =>
-          category.name === name
+          String(
+            category.name
+          ).toLowerCase() ===
+          name.toLowerCase()
       )
     ) {
 
       this.errorMessage =
         'Category already exists';
 
+      this.successMessage = '';
+
       return;
 
     }
 
 
-    this.api.createCategory({
+    this.api
+      .createCategory({
 
-      name,
+        name,
 
-      type: 'income',
+        type: 'income',
 
-      color: '#10b981',
+        color: '#10b981',
 
-      icon: 'tag'
+        icon: 'tag'
 
-    }).subscribe({
+      })
+      .subscribe({
 
-      next: () => {
+        next: (res: any) => {
 
-        this.newIncomeCategory = '';
+          console.log(
+            'Income category created:',
+            res
+          );
 
-        this.successMessage =
-          'Category added successfully';
 
-        this.errorMessage = '';
+          if (res?.category) {
 
-        this.loadCategories();
+            this.incomeCategories = [
 
-      },
+              ...this.incomeCategories,
 
-      error: (err: any) => {
+              res.category
 
-        this.errorMessage =
-          err?.error?.message ||
-          'Failed to add category';
+            ];
 
-        this.successMessage = '';
+          }
 
-      }
 
-    });
+          this.newIncomeCategory = '';
+
+
+          this.successMessage =
+            'Category added successfully';
+
+
+          this.errorMessage = '';
+
+
+          this.cdr.detectChanges();
+
+        },
+
+
+        error: (err: any) => {
+
+          console.error(
+            'Add income category error:',
+            err
+          );
+
+
+          this.errorMessage =
+            err?.error?.message ||
+            'Failed to add category';
+
+
+          this.successMessage = '';
+
+        }
+
+      });
 
   }
 
@@ -785,25 +1036,54 @@ export class Profile implements OnInit {
 
 
     this.api
-      .deleteCategory(categoryId)
+      .deleteCategory(
+        String(categoryId)
+      )
       .subscribe({
 
         next: () => {
 
+          console.log(
+            'Expense category deleted:',
+            categoryId
+          );
+
+
+          this.expenseCategories =
+            this.expenseCategories.filter(
+              (item: any) =>
+                String(
+                  item._id ||
+                  item.id
+                ) !==
+                String(categoryId)
+            );
+
+
           this.successMessage =
             'Category removed successfully';
 
+
           this.errorMessage = '';
 
-          this.loadCategories();
+
+          this.cdr.detectChanges();
 
         },
 
+
         error: (err: any) => {
+
+          console.error(
+            'Delete expense category error:',
+            err
+          );
+
 
           this.errorMessage =
             err?.error?.message ||
             'Failed to remove category';
+
 
           this.successMessage = '';
 
@@ -860,25 +1140,54 @@ export class Profile implements OnInit {
 
 
     this.api
-      .deleteCategory(categoryId)
+      .deleteCategory(
+        String(categoryId)
+      )
       .subscribe({
 
         next: () => {
 
+          console.log(
+            'Income category deleted:',
+            categoryId
+          );
+
+
+          this.incomeCategories =
+            this.incomeCategories.filter(
+              (item: any) =>
+                String(
+                  item._id ||
+                  item.id
+                ) !==
+                String(categoryId)
+            );
+
+
           this.successMessage =
             'Category removed successfully';
 
+
           this.errorMessage = '';
 
-          this.loadCategories();
+
+          this.cdr.detectChanges();
 
         },
 
+
         error: (err: any) => {
+
+          console.error(
+            'Delete income category error:',
+            err
+          );
+
 
           this.errorMessage =
             err?.error?.message ||
             'Failed to remove category';
+
 
           this.successMessage = '';
 
@@ -926,6 +1235,8 @@ export class Profile implements OnInit {
 
     this.successMessage =
       'Notification settings saved locally';
+
+    this.errorMessage = '';
 
   }
 

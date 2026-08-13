@@ -207,11 +207,106 @@ const createCategory = async (req, res) => {
 
 };
 
+// =====================================================
+// DELETE CATEGORY
+// =====================================================
+
+const deleteCategory = async (req, res) => {
+
+    try {
+
+        const userId = req.user.id;
+
+        const categoryId = Number(req.params.id);
+
+        if (!Number.isInteger(categoryId)) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message: "Invalid category ID"
+
+            });
+
+        }
+
+        // Find category belonging to the logged-in user
+        const category =
+            await prisma.category.findFirst({
+
+                where: {
+
+                    id: categoryId,
+
+                    userId
+
+                }
+
+            });
+
+        if (!category) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "Category not found"
+
+            });
+
+        }
+
+        // Delete category
+        await prisma.category.delete({
+
+            where: {
+
+                id: categoryId
+
+            }
+
+        });
+
+        console.log(
+            `Category ${categoryId} deleted for user ${userId}`
+        );
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                "Category deleted successfully"
+
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Delete Category Error:",
+            error
+        );
+
+        return res.status(500).json({
+
+            success: false,
+
+            message:
+                "Internal Server Error"
+
+        });
+
+    }
+
+};
 
 module.exports = {
 
     getCategories,
 
-    createCategory
+    createCategory,
+
+    deleteCategory
 
 };

@@ -6,18 +6,15 @@ const createBudget = async (req, res) => {
 
         const { category, limit, month } = req.body;
 
-        // Validation
-        if (!category || !limit || !month) {
+        if (!category || limit === undefined || !month) {
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
             });
         }
 
-        // Logged-in User
-        const userId = req.user.userId;
+        const userId = req.user.id;
 
-        // Create Budget
         const budget = await prisma.budget.create({
             data: {
                 category,
@@ -35,16 +32,20 @@ const createBudget = async (req, res) => {
 
     } catch (error) {
 
-        console.error(error);
+    console.error("=================================");
+    console.error("CREATE BUDGET ERROR");
+    console.error("Message:", error.message);
+    console.error("Code:", error.code);
+    console.error("Meta:", error.meta);
+    console.error("Full Error:", error);
+    console.error("=================================");
 
-        return res.status(500).json({
-            success: false,
-            message: "Internal Server Error"
-        });
-
-    }
+    return res.status(500).json({
+        success: false,
+        message: error.message || "Internal Server Error"
+    });
+}
 };
-
 // Get All Budgets
 const getAllBudgets = async (req, res) => {
     try {
@@ -52,7 +53,7 @@ const getAllBudgets = async (req, res) => {
         const { month } = req.query;
 
         const whereCondition = {
-            userId: req.user.userId
+            userId: req.user.id
         };
 
         if (month) {
@@ -73,7 +74,7 @@ const getAllBudgets = async (req, res) => {
                 const transactions = await prisma.transaction.findMany({
 
                     where: {
-                        userId: req.user.userId,
+                        userId: req.user.id,
                         category: budget.category
                     }
 
@@ -128,7 +129,7 @@ const getBudgetById = async (req, res) => {
         const budget = await prisma.budget.findFirst({
             where: {
                 id,
-                userId: req.user.userId
+                userId: req.user.id
             }
         });
 
@@ -166,7 +167,7 @@ const updateBudget = async (req, res) => {
         const existingBudget = await prisma.budget.findFirst({
             where: {
                 id,
-                userId: req.user.userId
+                userId: req.user.id
             }
         });
 
@@ -218,7 +219,7 @@ const deleteBudget = async (req, res) => {
         const existingBudget = await prisma.budget.findFirst({
             where: {
                 id,
-                userId: req.user.userId
+                userId: req.user.id
             }
         });
 

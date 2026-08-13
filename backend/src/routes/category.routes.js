@@ -2,7 +2,8 @@ const express = require("express");
 
 const {
     getCategories,
-    createCategory
+    createCategory,
+    deleteCategory
 } = require("../controllers/category.controller");
 
 const authenticateUser = require("../middleware/auth.middleware");
@@ -40,6 +41,17 @@ router.post(
     "/",
     authenticateUser,
     createCategory
+);
+
+
+// =====================================================
+// DELETE CATEGORY
+// =====================================================
+
+router.delete(
+    "/:id",
+    authenticateUser,
+    deleteCategory
 );
 
 
