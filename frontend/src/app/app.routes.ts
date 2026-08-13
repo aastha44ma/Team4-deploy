@@ -3,6 +3,7 @@ import { Dashboard } from './pages/dashboard/dashboard';
 import { Transactions } from './pages/transactions/transactions';
 import { Budgets } from './pages/budgets/budgets';
 import { TaxCalculator } from './pages/tax-calculator/tax-calculator';
+import { Profile } from './pages/profile/profile';
 
 import { authGuard } from './guards/auth.guard';
 
@@ -91,6 +92,15 @@ export const routes: Routes = [
       import('./pages/tax-calculator/tax-calculator')
         .then(m => m.TaxCalculator)
   },
+  
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/profile/profile')
+        .then(m => m.Profile)
+  },
+
 
 
   {
