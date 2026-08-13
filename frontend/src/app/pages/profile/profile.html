@@ -138,6 +138,27 @@
                   placeholder="Enter your email"
                   required>
               </div>
+              <div class="form-group">
+  <label for="country">Country</label>
+
+  <input
+    id="country"
+    type="text"
+    [(ngModel)]="country"
+    name="country"
+    placeholder="Enter your country">
+</div>
+
+<div class="form-group">
+  <label for="incomeBracket">Income Bracket</label>
+
+  <input
+    id="incomeBracket"
+    type="text"
+    [(ngModel)]="incomeBracket"
+    name="incomeBracket"
+    placeholder="Enter your income bracket">
+</div>
 
               <button type="submit" class="btn btn-primary" [disabled]="isLoading">
                 @if (isLoading) {
@@ -184,7 +205,7 @@
                     <p>No expense categories yet. Add your first category above.</p>
                   </div>
                 }
-                @for (cat of expenseCategories; track cat._id) {
+                @for (cat of expenseCategories; track cat.id) {
                   <div class="category-item">
                     <span class="category-name">{{ cat.name }}</span>
                     <div class="category-actions">
@@ -221,7 +242,7 @@
                     <p>No income categories yet. Add your first category above.</p>
                   </div>
                 }
-                @for (cat of incomeCategories; track cat._id) {
+                @for (cat of incomeCategories; track cat.id) {
                   <div class="category-item">
                     <span class="category-name">{{ cat.name }}</span>
                     <div class="category-actions">

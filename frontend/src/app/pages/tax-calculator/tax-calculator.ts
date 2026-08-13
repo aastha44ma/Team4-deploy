@@ -150,16 +150,56 @@ export class TaxCalculator implements OnInit {
     this.isCalculating = true;
     this.calculationResult = null;
 
-    const data: TaxCalculationData =
-      this.taxForm.getRawValue();
+   const formData = this.taxForm.getRawValue();
+
+const data: TaxCalculationData = {
+  ...formData,
+  annualIncome: formData.taxableIncome,
+  quarter: formData.taxYear
+};
 
     this.taxService.calculateTax(data).subscribe({
-      next: (response: TaxCalculationResult) => {
-        this.calculationResult = response;
-        this.isCalculating = false;
+     next: (response: any) => {
+  const estimate = response.taxEstimate;
 
-        this.changeDetectorRef.detectChanges();
-      },
+  const taxableIncome = Number(
+    estimate?.annualIncome ?? 0
+  );
+
+  const estimatedTax = Number(
+    estimate?.estimatedTax ?? 0
+  );
+
+  this.calculationResult = {
+    totalTax: estimatedTax,
+    totalIncomeAfterTax: taxableIncome - estimatedTax,
+    slabs: [],
+
+    taxRegimeLabel:
+      this.taxForm.getRawValue().taxRegime === 'new'
+        ? 'New Tax Regime'
+        : 'Old Tax Regime',
+
+    taxYear:
+      estimate?.quarter ??
+      this.taxForm.getRawValue().taxYear,
+
+    taxableIncome,
+
+    estimatedTax,
+
+    effectiveTaxRate:
+      taxableIncome > 0
+        ? (estimatedTax / taxableIncome) * 100
+        : 0,
+
+    slabBreakdown: []
+  };
+
+  this.isCalculating = false;
+
+  this.changeDetectorRef.detectChanges();
+},
 
       error: (error: HttpErrorResponse) => {
         this.isCalculating = false;
@@ -186,8 +226,13 @@ export class TaxCalculator implements OnInit {
 
     this.isSaving = true;
 
-    const data: TaxCalculationData =
-      this.taxForm.getRawValue();
+  const formData = this.taxForm.getRawValue();
+
+const data: TaxCalculationData = {
+  ...formData,
+  annualIncome: formData.taxableIncome,
+  quarter: formData.taxYear
+};
 
     this.taxService.saveTaxEstimate(data).subscribe({
       next: (response: {message: string; taxEstimate: TaxEstimate}) => {

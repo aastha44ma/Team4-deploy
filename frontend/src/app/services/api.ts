@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpHeaders
+} from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -8,95 +11,71 @@ export class ApiService {
 
   private baseUrl = 'http://localhost:5000/api';
 
-
-  constructor(
-    private http: HttpClient
-  ) {}
-
+  constructor(private http: HttpClient) {}
 
   // =========================================================
-  // TOKEN OPTIONS
+  // HTTP OPTIONS
   // =========================================================
 
   private getOptions() {
 
-    const token =
-      typeof window !== 'undefined'
-        ? localStorage.getItem('accessToken')
-        : null;
+    const token = this.getToken();
 
-
-    let headers = new HttpHeaders();
-
+    let headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
 
     if (token) {
-
-      headers =
-        headers.set(
-          'Authorization',
-          `Bearer ${token}`
-        );
-
+      headers = headers.set(
+        'Authorization',
+        `Bearer ${token}`
+      );
     }
 
-
     return {
-
       headers,
-
       withCredentials: true
-
     };
-
   }
-
 
 
   // =========================================================
   // AUTH
   // =========================================================
 
+  register(data: any) {
+
+    return this.http.post(
+      `${this.baseUrl}/auth/register`,
+      data,
+      this.getOptions()
+    );
+  }
+
 
   login(data: any) {
 
     return this.http.post(
       `${this.baseUrl}/auth/login`,
-      data
+      data,
+      this.getOptions()
     );
-
   }
-
-
-
-  register(data: any) {
-
-    return this.http.post(
-      `${this.baseUrl}/auth/register`,
-      data
-    );
-
-  }
-
 
 
   // =========================================================
   // LOCAL STORAGE
   // =========================================================
 
-
   saveToken(token: string) {
 
     if (typeof window !== 'undefined') {
-
       localStorage.setItem(
         'accessToken',
         token
       );
-
     }
-
   }
-
 
 
   getToken() {
@@ -110,9 +89,7 @@ export class ApiService {
     }
 
     return null;
-
   }
-
 
 
   saveUser(user: any) {
@@ -125,9 +102,7 @@ export class ApiService {
       );
 
     }
-
   }
-
 
 
   getUser() {
@@ -137,18 +112,13 @@ export class ApiService {
       const user =
         localStorage.getItem('user');
 
-
       return user
         ? JSON.parse(user)
         : null;
-
     }
 
-
     return null;
-
   }
-
 
 
   logout() {
@@ -159,22 +129,17 @@ export class ApiService {
         'accessToken'
       );
 
-
       localStorage.removeItem(
         'user'
       );
 
     }
-
   }
-
-
 
 
   // =========================================================
   // TRANSACTIONS
   // =========================================================
-
 
   getTransactions() {
 
@@ -182,9 +147,7 @@ export class ApiService {
       `${this.baseUrl}/transactions`,
       this.getOptions()
     );
-
   }
-
 
 
   createTransaction(data: any) {
@@ -194,9 +157,7 @@ export class ApiService {
       data,
       this.getOptions()
     );
-
   }
-
 
 
   deleteTransaction(id: string) {
@@ -205,195 +166,179 @@ export class ApiService {
       `${this.baseUrl}/transactions/${id}`,
       this.getOptions()
     );
-
   }
 
 
+  // =========================================================
+  // BUDGET
+  // =========================================================
 
-// =========================================================
-// BUDGET
-// =========================================================
+  getBudgets(month?: string) {
 
-getBudgets(month?: string) {
+    const url = month
+      ? `${this.baseUrl}/budgets?month=${month}`
+      : `${this.baseUrl}/budgets`;
 
-  const url = month
-    ? `${this.baseUrl}/budgets?month=${month}`
-    : `${this.baseUrl}/budgets`;
+    return this.http.get(
+      url,
+      this.getOptions()
+    );
+  }
 
-  return this.http.get(
-    url,
-    this.getOptions()
-  );
 
-}
+  createBudget(data: any) {
 
-createBudget(data: any) {
+    return this.http.post(
+      `${this.baseUrl}/budgets`,
+      data,
+      this.getOptions()
+    );
+  }
 
-  return this.http.post(
-    `${this.baseUrl}/budgets`,
-    data,
-    this.getOptions()
-  );
 
-}
+  updateBudget(
+    id: number,
+    data: any
+  ) {
 
-updateBudget(id: number, data: any) {
+    return this.http.put(
+      `${this.baseUrl}/budgets/${id}`,
+      data,
+      this.getOptions()
+    );
+  }
 
-  return this.http.put(
-    `${this.baseUrl}/budgets/${id}`,
-    data,
-    this.getOptions()
-  );
 
-}
+  deleteBudget(id: number) {
 
-deleteBudget(id: number) {
-
-  return this.http.delete(
-    `${this.baseUrl}/budgets/${id}`,
-    this.getOptions()
-  );
-
-}
-
+    return this.http.delete(
+      `${this.baseUrl}/budgets/${id}`,
+      this.getOptions()
+    );
+  }
 
 
   // =========================================================
   // PROFILE
   // =========================================================
 
+  getProfile() {
+
+    return this.http.get(
+      `${this.baseUrl}/user/profile`,
+      this.getOptions()
+    );
+  }
+
 
   updateProfile(data: any) {
 
     return this.http.put(
-      `${this.baseUrl}/auth/profile`,
+      `${this.baseUrl}/user/profile`,
       data,
       this.getOptions()
     );
-
   }
 
 
-
-  changePassword(
-    data:{
-      currentPassword:string;
-      newPassword:string;
-    }
-  ){
+  changePassword(data: {
+    currentPassword: string;
+    newPassword: string;
+  }) {
 
     return this.http.put(
-      `${this.baseUrl}/auth/password`,
+      `${this.baseUrl}/user/password`,
       data,
       this.getOptions()
     );
-
   }
-
 
 
   // =========================================================
   // CATEGORY
   // =========================================================
 
-
-  getCategories(){
+  getCategories() {
 
     return this.http.get(
       `${this.baseUrl}/categories`,
       this.getOptions()
     );
-
   }
 
 
-
   getCategoriesByType(
-    type:'expense'|'income'
-  ){
+    type: 'expense' | 'income'
+  ) {
 
     return this.http.get(
       `${this.baseUrl}/categories/type/${type}`,
       this.getOptions()
     );
-
   }
 
 
-
-  createCategory(
-    data:{
-      name:string;
-      type:'expense'|'income';
-      color?:string;
-      icon?:string;
-    }
-  ){
+  createCategory(data: {
+    name: string;
+    type: 'expense' | 'income';
+    color?: string;
+    icon?: string;
+  }) {
 
     return this.http.post(
       `${this.baseUrl}/categories`,
       data,
       this.getOptions()
     );
-
   }
 
 
-
   updateCategory(
-    categoryId:string,
-    data:{
-      name?:string;
-      color?:string;
-      icon?:string;
+    categoryId: string,
+    data: {
+      name?: string;
+      color?: string;
+      icon?: string;
     }
-  ){
+  ) {
 
     return this.http.put(
       `${this.baseUrl}/categories/${categoryId}`,
       data,
       this.getOptions()
     );
-
   }
 
 
-
-  deleteCategory(
-    categoryId:string
-  ){
+  deleteCategory(categoryId: string) {
 
     return this.http.delete(
       `${this.baseUrl}/categories/${categoryId}`,
       this.getOptions()
     );
-
   }
 
 
-
-  initializeDefaultCategories(){
+  initializeDefaultCategories() {
 
     return this.http.post(
       `${this.baseUrl}/categories/initialize-default`,
       {},
       this.getOptions()
     );
-
   }
 
 
   // =========================================================
-// DASHBOARD
-// =========================================================
+  // DASHBOARD
+  // =========================================================
 
-getDashboard() {
+  getDashboard() {
 
-  return this.http.get(
-    `${this.baseUrl}/dashboard`,
-    this.getOptions()
-  );
-
-}
+    return this.http.get(
+      `${this.baseUrl}/dashboard`,
+      this.getOptions()
+    );
+  }
 
 }

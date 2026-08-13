@@ -130,19 +130,20 @@ export class Transactions implements OnInit {
 
     this.api.getTransactions().subscribe({
 
-      next: (res: any) => {
+    next: (res: any) => {
 
-        console.log("API DATA", res);
+  console.log("API DATA", res);
 
-        this.transactions = [...(res.transactions || [])];
+  this.transactions = [...(res.transactions || [])];
 
-        this.isLoading = false;
+  this.isLoading = false;
 
-        console.log("FINAL ARRAY", this.transactions);
+  console.log("FINAL ARRAY", this.transactions);
+  console.log("LENGTH", this.transactions.length);
 
-        this.cdr.detectChanges();
+  this.cdr.detectChanges();
 
-      },
+},
 
       error: (err) => {
 
