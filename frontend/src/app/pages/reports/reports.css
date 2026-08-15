@@ -1,0 +1,346 @@
+:host {
+  display: block;
+}
+
+.reports-page {
+  min-height: 100%;
+  padding: 32px;
+  background: #f6f8fb;
+}
+
+.page-header {
+  margin-bottom: 26px;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #172033;
+  font-size: 30px;
+}
+
+.page-header p {
+  margin: 6px 0 0;
+  color: #667085;
+}
+
+.message {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 8px;
+}
+
+.error-message {
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.success-message {
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+.reports-card {
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(16, 24, 40, 0.05);
+  margin-bottom: 24px;
+}
+
+.reports-card h2 {
+  margin: 0 0 22px 0;
+  color: #172033;
+}
+
+.reports-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-group label {
+  color: #344054;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172033;
+  font: inherit;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #667085;
+  box-shadow: 0 0 0 3px rgba(102, 112, 133, 0.12);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.right-align {
+  justify-content: flex-end;
+}
+
+.primary-button,
+.secondary-button,
+.delete-button {
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+}
+
+.primary-button {
+  padding: 11px 18px;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.primary-button:hover {
+  background: #1d4ed8;
+}
+
+.secondary-button {
+  padding: 10px 15px;
+  border: 1px solid #d0d5dd;
+  background: #ffffff;
+  color: #344054;
+}
+
+.delete-button {
+  padding: 9px 13px;
+  background: #fef3f2;
+  color: #b42318;
+}
+
+.delete-button.small {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reports-table th,
+.reports-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #eaecf0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.reports-table th {
+  background: #f9fafb;
+  color: #475467;
+  font-size: 13px;
+}
+
+.reports-table td {
+  color: #344054;
+}
+
+.reports-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.reports-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.reports-table tbody tr.selected {
+  background-color: #eff6ff;
+}
+
+.empty-state, .loading-state {
+  padding: 30px 0;
+  text-align: center;
+  color: #667085;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.preview-header h2 {
+  margin: 0;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.empty-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: #f9fafb;
+  border: 1px dashed #d0d5dd;
+  border-radius: 8px;
+  color: #667085;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-preview h3 {
+  margin: 0 0 8px 0;
+  color: #172033;
+}
+
+.empty-preview p {
+  margin: 0;
+}
+
+.report-header {
+  margin-bottom: 30px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #eaecf0;
+}
+
+.report-header h1 {
+  margin: 0 0 8px 0;
+  color: #172033;
+}
+
+.report-header p {
+  margin: 0;
+  color: #667085;
+}
+
+.report-data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.data-box {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  border: 1px solid #eaecf0;
+  border-radius: 10px;
+  background: #f9fafb;
+}
+
+.data-box span {
+  margin-bottom: 12px;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.data-box strong {
+  color: #172033;
+  font-size: 24px;
+}
+
+.breakdown-section {
+  margin-bottom: 32px;
+}
+
+.breakdown-section h3 {
+  margin: 0 0 16px 0;
+  color: #172033;
+}
+
+.report-breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-breakdown-table th,
+.report-breakdown-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eaecf0;
+  text-align: left;
+}
+
+.report-breakdown-table th {
+  color: #475467;
+  font-size: 13px;
+  background: #f9fafb;
+}
+
+@media print {
+  /* Hide the global sidebar and layout padding using ng-deep */
+  ::ng-deep app-sidebar {
+    display: none !important;
+  }
+  ::ng-deep .page-content {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide local elements we don't want printed */
+  .page-header, 
+  .generate-card, 
+  .recent-reports-card, 
+  .preview-header, 
+  .empty-preview,
+  .message {
+    display: none !important;
+  }
+
+  /* Remove background and padding so the printable area sits at top left */
+  .reports-page {
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  .preview-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}

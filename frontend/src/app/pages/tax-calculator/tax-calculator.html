@@ -1,25 +1,24 @@
-<section class="tax-page">
-  <header class="page-header">
-    <div>
-      <h1>Tax Calculator</h1>
-      <p>
-        Estimate your income tax based on the selected country,
-        financial year, and tax regime.
-      </p>
+<div class="tax-calculator-container">
+  <app-sidebar></app-sidebar>
+
+  <section class="tax-page">
+    <header class="page-header">
+      <div>
+        <h1>Calculate your estimated tax obligations</h1>
+      </div>
+    </header>
+
+    <div *ngIf="errorMessage" class="message error-message">
+      {{ errorMessage }}
     </div>
-  </header>
 
-  <div *ngIf="errorMessage" class="message error-message">
-    {{ errorMessage }}
-  </div>
+    <div *ngIf="successMessage" class="message success-message">
+      {{ successMessage }}
+    </div>
 
-  <div *ngIf="successMessage" class="message success-message">
-    {{ successMessage }}
-  </div>
-
-  <div class="tax-layout">
-    <section class="tax-card calculator-card">
-      <h2>Calculate Estimated Tax</h2>
+    <div class="tax-layout">
+      <section class="tax-card calculator-card">
+        <h2>Quarterly Tax Calculator</h2>
 
       <form
         [formGroup]="taxForm"
@@ -28,108 +27,155 @@
       >
         <div class="form-grid">
           <div class="form-group">
-            <label for="country">Country</label>
-
+            <label for="country">Country/Region</label>
             <select id="country" formControlName="country">
-              <option
-                *ngFor="let country of countries"
-                [value]="country"
-              >
+              <option *ngFor="let country of countries" [value]="country">
                 {{ country }}
               </option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="region">State / Region</label>
-
+            <label for="region">State/Province</label>
             <select id="region" formControlName="region">
-              <option value="">Select state / region</option>
-
-              <option
-                *ngFor="let region of regions"
-                [value]="region"
-              >
+              <option value="">Select state/province</option>
+              <option *ngFor="let region of currentRegions" [value]="region">
                 {{ region }}
               </option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="taxYear">Financial Year</label>
-
-            <select id="taxYear" formControlName="taxYear">
-              <option
-                *ngFor="let taxYear of taxYears"
-                [value]="taxYear"
-              >
-                {{ taxYear }}
+            <label for="filingStatus">Filing Status</label>
+            <select id="filingStatus" formControlName="filingStatus">
+              <option *ngFor="let fs of filingStatuses" [value]="fs">
+                {{ fs }}
               </option>
             </select>
           </div>
 
           <div class="form-group">
-            <label for="taxRegime">Tax Regime</label>
-
-            <select id="taxRegime" formControlName="taxRegime">
-              <option
-                *ngFor="let regime of taxRegimes"
-                [value]="regime.value"
-              >
-                {{ regime.label }}
+            <label for="quarter">Quarter</label>
+            <select id="quarter" formControlName="quarter">
+              <option *ngFor="let q of quarters" [value]="q">
+                {{ q }}
               </option>
             </select>
           </div>
 
-          <div class="form-group income-group">
-            <label for="taxableIncome">Taxable Income</label>
-
-            <input
-              id="taxableIncome"
-              type="number"
-              min="0"
-              step="1000"
-              formControlName="taxableIncome"
-              placeholder="Enter taxable income"
-            />
-
-            <small
-              class="validation-error"
-              *ngIf="
-                taxForm.controls.taxableIncome.touched &&
-                taxForm.controls.taxableIncome.invalid
-              "
-            >
-              Enter a valid taxable income.
-            </small>
+          <div class="form-group income-group full-width">
+            <label class="section-label">Income</label>
+            <label for="annualGrossIncome">Annual Gross Income</label>
+            <div class="input-with-icon">
+              <span class="currency-icon">{{ currentCurrency }}</span>
+              <input
+                id="annualGrossIncome"
+                type="number"
+                formControlName="annualGrossIncome"
+                min="0"
+                placeholder="0.00"
+              />
+            </div>
+            <label for="grossIncome" style="margin-top: 16px;">Gross Income for Quarter</label>
+            <div class="input-with-icon">
+              <span class="currency-icon">{{ currentCurrency }}</span>
+              <input
+                id="grossIncome"
+                type="number"
+                formControlName="grossIncome"
+                min="0"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="error-message" *ngIf="taxForm.errors?.['incomeMismatch'] && taxForm.touched" style="color: var(--danger); font-size: 0.875rem; margin-top: 0.25rem;">
+              Annual Gross Income cannot be less than Quarterly Gross Income.
+            </div>
           </div>
         </div>
 
-        <button
-          type="submit"
-          class="primary-button"
-          [disabled]="isCalculating"
-        >
-          {{ isCalculating ? 'Calculating...' : 'Calculate Tax' }}
-        </button>
+        <div class="form-group deductions-group" formGroupName="deductions">
+          <label class="section-label">Deductions</label>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="businessExpenses">Business Expenses</label>
+              <div class="input-with-icon">
+                <span class="currency-icon">{{ currentCurrency }}</span>
+                <input
+                  id="businessExpenses"
+                  type="number"
+                  min="0"
+                  formControlName="businessExpenses"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="retirementContributions">Retirement Contributions</label>
+              <div class="input-with-icon">
+                <span class="currency-icon">{{ currentCurrency }}</span>
+                <input
+                  id="retirementContributions"
+                  type="number"
+                  min="0"
+                  formControlName="retirementContributions"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="healthInsurance">Health Insurance Premiums</label>
+              <div class="input-with-icon">
+                <span class="currency-icon">{{ currentCurrency }}</span>
+                <input
+                  id="healthInsurance"
+                  type="number"
+                  min="0"
+                  formControlName="healthInsurance"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="homeOffice">Home Office Deduction</label>
+              <div class="input-with-icon">
+                <span class="currency-icon">{{ currentCurrency }}</span>
+                <input
+                  id="homeOffice"
+                  type="number"
+                  min="0"
+                  formControlName="homeOffice"
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions right-align">
+          <button
+            type="submit"
+            class="primary-button"
+            [disabled]="isCalculating"
+          >
+            {{ isCalculating ? 'Calculating...' : 'Calculate Estimated Tax' }}
+          </button>
+        </div>
       </form>
     </section>
 
-    <section
-      *ngIf="calculationResult"
-      class="tax-card result-card"
-    >
+    <section *ngIf="calculationResult" class="tax-card result-card">
       <div class="result-heading">
         <div>
           <h2>Tax Estimate</h2>
-
           <p>
             {{ calculationResult.taxRegimeLabel }}
             &middot;
-            {{ calculationResult.taxYear }}
+            {{ calculationResult.quarter }}
           </p>
         </div>
-
         <button
           type="button"
           class="save-button"
@@ -142,33 +188,37 @@
 
       <div class="result-summary">
         <article class="result-summary-card">
-          <span>Taxable Income</span>
-
-          <strong>
-            &#8377;{{ calculationResult.taxableIncome | number:'1.2-2' }}
-          </strong>
+          <span>Annual Gross Income</span>
+          <strong>{{ currentCurrency }}{{ calculationResult.annualGrossIncome | number:'1.2-2' }}</strong>
         </article>
-
         <article class="result-summary-card">
-          <span>Estimated Tax</span>
-
-          <strong class="tax-value">
-            &#8377;{{ calculationResult.estimatedTax | number:'1.2-2' }}
-          </strong>
+          <span>Quarterly Gross Income</span>
+          <strong>{{ currentCurrency }}{{ calculationResult.grossIncome | number:'1.2-2' }}</strong>
         </article>
-
+        <article class="result-summary-card">
+          <span>Total Deductions</span>
+          <strong>{{ currentCurrency }}{{ (calculationResult.deductions.businessExpenses + calculationResult.deductions.retirementContributions + calculationResult.deductions.healthInsurance + calculationResult.deductions.homeOffice) | number:'1.2-2' }}</strong>
+        </article>
+        <article class="result-summary-card">
+          <span>Taxable Annual Income</span>
+          <strong>{{ currentCurrency }}{{ calculationResult.taxableIncome | number:'1.2-2' }}</strong>
+        </article>
+        <article class="result-summary-card">
+          <span>Estimated Annual Tax</span>
+          <strong class="tax-value">{{ currentCurrency }}{{ calculationResult.estimatedAnnualTax | number:'1.2-2' }}</strong>
+        </article>
+        <article class="result-summary-card">
+          <span>Estimated Quarterly Tax</span>
+          <strong class="tax-value">{{ currentCurrency }}{{ calculationResult.estimatedQuarterlyTax | number:'1.2-2' }}</strong>
+        </article>
         <article class="result-summary-card">
           <span>Effective Tax Rate</span>
-
-          <strong>
-            {{ calculationResult.effectiveTaxRate | number:'1.2-2' }}%
-          </strong>
+          <strong>{{ calculationResult.effectiveTaxRate | number:'1.0-2' }}%</strong>
         </article>
       </div>
 
       <div class="slab-section">
         <h3>Tax Slab Breakdown</h3>
-
         <div class="table-wrapper">
           <table class="slab-table">
             <thead>
@@ -179,45 +229,55 @@
                 <th>Tax Amount</th>
               </tr>
             </thead>
-
             <tbody>
-              <tr
-                *ngFor="
-                  let slab of calculationResult.slabBreakdown;
-                  trackBy: trackSlab
-                "
-              >
+              <tr *ngFor="let slab of calculationResult.slabBreakdown; trackBy: trackSlab">
                 <td>{{ slab.label }}</td>
-
-                <td>
-                  &#8377;{{ slab.taxableAmount | number:'1.2-2' }}
-                </td>
-
-                <td>
-                  {{ slab.rate | number:'1.0-2' }}%
-                </td>
-
-                <td>
-                  &#8377;{{ slab.taxAmount | number:'1.2-2' }}
-                </td>
+                <td>{{ currentCurrency }}{{ slab.taxableAmount | number:'1.2-2' }}</td>
+                <td>{{ slab.rate | number:'1.0-2' }}%</td>
+                <td>{{ currentCurrency }}{{ slab.taxAmount | number:'1.2-2' }}</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
-  </div>
 
-  <section class="tax-card history-card">
+    <section *ngIf="calculationResult && calculationResult.advanceTaxDueDates" class="tax-card calendar-card">
+      <h2>Tax Calendar</h2>
+      
+      <div class="calendar-list">
+        <ng-container *ngFor="let date of calculationResult.advanceTaxDueDates">
+          <h3 class="month-header">{{ getMonthName(date.month) }} 2025</h3>
+          
+          <div class="calendar-item">
+            <div class="calendar-item-info">
+              <h4>Reminder: {{ date.label }}</h4>
+              <span class="date">{{ getMonthName(date.month) }} 1, 2025</span>
+              <p class="description">Reminder for upcoming {{ date.label | lowercase }} due on {{ getMonthName(date.month) }} {{ date.day }}, 2025</p>
+            </div>
+            <span class="badge badge-reminder">reminder</span>
+          </div>
+
+          <div class="calendar-item">
+            <div class="calendar-item-info">
+              <h4>{{ date.label }}</h4>
+              <span class="date">{{ getMonthName(date.month) }} {{ date.day }}, 2025</span>
+              <p class="description">{{ date.label | lowercase }} due - <strong>{{ currentCurrency }}{{ (calculationResult.estimatedTax * ((date.percentage || 25) / 100)) | number:'1.2-2' }}</strong></p>
+            </div>
+            <span class="badge badge-payment">payment</span>
+          </div>
+        </ng-container>
+      </div>
+    </section>
+
+    </div>
+
+    <section class="tax-card history-card">
     <div class="history-heading">
       <div>
         <h2>Saved Tax Estimates</h2>
-
-        <p>
-          Review your previously saved tax calculations.
-        </p>
+        <p>Review your previously saved tax calculations.</p>
       </div>
-
       <button
         type="button"
         class="secondary-button"
@@ -228,97 +288,47 @@
       </button>
     </div>
 
-    <p
-      *ngIf="isLoadingHistory"
-      class="state-message"
-    >
-      Loading saved tax estimates...
-    </p>
+    <p *ngIf="isLoadingHistory" class="state-message">Loading saved tax estimates...</p>
+    <p *ngIf="!isLoadingHistory && taxEstimates.length === 0" class="state-message">No saved tax estimates yet.</p>
 
-    <p
-      *ngIf="
-        !isLoadingHistory &&
-        taxEstimates.length === 0
-      "
-      class="state-message"
-    >
-      No saved tax estimates yet.
-    </p>
-
-    <div
-      *ngIf="
-        !isLoadingHistory &&
-        taxEstimates.length > 0
-      "
-      class="estimate-list"
-    >
-      <article
-        *ngFor="
-          let estimate of taxEstimates;
-          trackBy: trackEstimate
-        "
-        class="estimate-item"
-      >
+    <div *ngIf="!isLoadingHistory && taxEstimates.length > 0" class="estimate-list">
+      <article *ngFor="let estimate of taxEstimates; trackBy: trackEstimate" class="estimate-item">
         <div class="estimate-main">
           <div>
             <h3>
               {{ estimate.country }}
-
-              <span *ngIf="estimate.region">
-                &middot; {{ estimate.region }}
-              </span>
+              <span *ngIf="estimate.region">&middot; {{ estimate.region }}</span>
             </h3>
-
             <p>
-              {{ estimate.taxYear }}
+              {{ estimate.quarter || estimate.taxYear }}
               &middot;
-              {{
-                estimate.taxRegime === 'new'
-                  ? 'New Tax Regime'
-                  : estimate.taxRegime
-              }}
+              {{ estimate.filingStatus || (estimate.taxRegime === 'new' ? 'New Tax Regime' : estimate.taxRegime) }}
             </p>
-
-            <small>
-              Saved {{ estimate.createdAt | date:'medium' }}
-            </small>
+            <small>Saved {{ estimate.createdAt | date:'medium' }}</small>
           </div>
 
           <div class="estimate-values">
             <div>
+              <span>Annual Gross</span>
+              <strong>{{ currencyByCountry[estimate.country] || '$' }}{{ estimate.annualGrossIncome | number:'1.2-2' }}</strong>
+            </div>
+            <div>
               <span>Taxable Income</span>
-
-              <strong>
-                &#8377;{{ estimate.taxableIncome | number:'1.2-2' }}
-              </strong>
+              <strong>{{ currencyByCountry[estimate.country] || '$' }}{{ estimate.taxableIncome | number:'1.2-2' }}</strong>
             </div>
-
             <div>
-              <span>Estimated Tax</span>
-
-              <strong class="tax-value">
-                &#8377;{{ estimate.estimatedTax | number:'1.2-2' }}
-              </strong>
+              <span>Annual Tax</span>
+              <strong class="tax-value">{{ currencyByCountry[estimate.country] || '$' }}{{ estimate.estimatedAnnualTax | number:'1.2-2' }}</strong>
             </div>
-
             <div>
-              <span>Effective Rate</span>
-
-              <strong>
-                {{ estimate.effectiveTaxRate | number:'1.2-2' }}%
-              </strong>
+              <span>Quarterly Tax</span>
+              <strong class="tax-value">{{ currencyByCountry[estimate.country] || '$' }}{{ estimate.estimatedQuarterlyTax | number:'1.2-2' }}</strong>
             </div>
           </div>
         </div>
-
-        <button
-          type="button"
-          class="delete-button"
-          (click)="deleteEstimate(estimate)"
-        >
-          Delete
-        </button>
+        <button type="button" class="delete-button" (click)="deleteEstimate(estimate)">Delete</button>
       </article>
     </div>
+    </section>
   </section>
-</section>
+</div>

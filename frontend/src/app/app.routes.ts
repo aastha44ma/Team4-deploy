@@ -83,6 +83,14 @@ export const routes: Routes = [
         .then(m => m.TaxCalculator)
   },
 
+   {
+    path: 'reports',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/reports/reports')
+        .then(m => m.Reports)
+  },
+
   {
     path: 'profile',
     canActivate: [authGuard],
