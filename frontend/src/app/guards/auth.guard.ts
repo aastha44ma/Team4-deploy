@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
+import { Router, CanActivateFn } from '@angular/router';
 import { ApiService } from '../services/api';
-
 
 export const authGuard: CanActivateFn = () => {
 
@@ -15,15 +15,10 @@ export const authGuard: CanActivateFn = () => {
   const token = apiService.getToken();
 
   if (token) {
-
     return true;
-
   }
 
   router.navigate(['/login']);
-
   return false;
-
-};
   */
 };
