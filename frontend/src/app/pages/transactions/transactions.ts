@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api';
 import { ChangeDetectorRef } from '@angular/core';
+import { Sidebar } from '../../components/sidebar/sidebar';
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, Sidebar],
   templateUrl: './transactions.html',
   styleUrl: './transactions.css',
 })
