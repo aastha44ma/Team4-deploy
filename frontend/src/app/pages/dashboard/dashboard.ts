@@ -16,7 +16,10 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   transactions: any[] = [];
   isLoading = false;
   errorMessage = '';
+
   userName = 'Freelancer';
+  userEmail = '';
+
   isLightTheme = false;
 
   totalIncome = 0;
@@ -35,43 +38,70 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Initialize theme from localStorage (guard for server-side rendering)
-    const savedTheme = (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.getItem === 'function') ? window.localStorage.getItem('theme') : null;
+
+    // Initialize theme from localStorage
+    const savedTheme = (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.getItem === 'function')
+      ? window.localStorage.getItem('theme')
+      : null;
+
     if (savedTheme === 'light') {
       this.isLightTheme = true;
-      if (typeof document !== 'undefined') document.body.classList.add('light-theme');
+
+      if (typeof document !== 'undefined')
+        document.body.classList.add('light-theme');
+
     } else {
+
       this.isLightTheme = false;
-      if (typeof document !== 'undefined') document.body.classList.remove('light-theme');
+
+      if (typeof document !== 'undefined')
+        document.body.classList.remove('light-theme');
+
     }
 
-    const userStr = (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.getItem === 'function') ? window.localStorage.getItem('user') : null;
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        this.userName = user.fullName || 'Freelancer';
-      } catch (e) {
-        console.error('Error parsing user storage:', e);
-      }
-    }
     setTimeout(() => {
+
       this.loadTransactions();
       this.loadChartData();
+
     }, 0);
+
   }
 
   toggleTheme() {
+
     this.isLightTheme = !this.isLightTheme;
+
     if (this.isLightTheme) {
-      if (typeof document !== 'undefined') document.body.classList.add('light-theme');
-      if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.setItem === 'function') window.localStorage.setItem('theme', 'light');
+
+      if (typeof document !== 'undefined')
+        document.body.classList.add('light-theme');
+
+      if (
+        typeof window !== 'undefined' &&
+        window.localStorage &&
+        typeof window.localStorage.setItem === 'function'
+      )
+        window.localStorage.setItem('theme', 'light');
+
     } else {
-      if (typeof document !== 'undefined') document.body.classList.remove('light-theme');
-      if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.setItem === 'function') window.localStorage.setItem('theme', 'dark');
+
+      if (typeof document !== 'undefined')
+        document.body.classList.remove('light-theme');
+
+      if (
+        typeof window !== 'undefined' &&
+        window.localStorage &&
+        typeof window.localStorage.setItem === 'function'
+      )
+        window.localStorage.setItem('theme', 'dark');
+
     }
+
   }
 
   ngAfterViewInit() {
+
     if (typeof document === 'undefined') {
       return;
     }
@@ -79,313 +109,612 @@ export class Dashboard implements OnInit, AfterViewInit, OnDestroy {
     if (this.expenseCategories.length > 0) {
       this.renderSpendingChart();
     }
+
     this.renderIncomeExpenseChart();
+
   }
 
   ngOnDestroy() {
+
     if (this.spendingChart) {
       this.spendingChart.destroy();
     }
+
     if (this.incomeExpenseChart) {
       this.incomeExpenseChart.destroy();
     }
+
   }
 
   loadTransactions() {
+
     this.isLoading = true;
     this.errorMessage = '';
-    this.cdr.detectChanges();
-    this.api.getDashboard().subscribe({
-      next: (res: any) => {
-        this.isLoading = false;
-       if (res && res.dashboard) {
-    this.userName = res.dashboard.user.name;
-    this.totalIncome = res.dashboard.summary.totalIncome;
-    this.totalExpense = res.dashboard.summary.totalExpense;
-    this.savings = res.dashboard.summary.balance;
 
-    this.transactions = res.dashboard.recentTransactions;
-} else {
+    this.cdr.detectChanges();
+
+    this.api.getDashboard().subscribe({
+
+      next: (res: any) => {
+
+        this.isLoading = false;
+
+        if (res && res.dashboard) {
+
+          this.userName =
+            res.dashboard.user.name;
+
+          this.userEmail =
+            res.dashboard.user.email;
+
+          this.totalIncome =
+            res.dashboard.summary.totalIncome;
+
+          this.totalExpense =
+            res.dashboard.summary.totalExpense;
+
+          this.savings =
+            res.dashboard.summary.balance;
+
+          this.transactions =
+            res.dashboard.recentTransactions;
+
+        } else {
+
           this.transactions = [];
+
         }
-      
+
         this.cdr.detectChanges();
+
         // Re-render charts after transactions loaded
         setTimeout(() => {
+
           this.renderIncomeExpenseChart();
+
         }, 100);
+
       },
+
       error: (err: any) => {
+
         this.isLoading = false;
-        console.error('Error loading transactions:', err);
+
+        console.error(
+          'Error loading transactions:',
+          err
+        );
+
         if (err.status === 401) {
-          if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.removeItem === 'function') {
+
+          if (
+            typeof window !== 'undefined' &&
+            window.localStorage &&
+            typeof window.localStorage.removeItem === 'function'
+          ) {
+
             window.localStorage.removeItem('user');
             window.localStorage.removeItem('accessToken');
+
           }
+
           this.router.navigate(['/']);
+
         } else {
-          this.errorMessage = 'Failed to load transaction data. Please try again.';
+
+          this.errorMessage =
+            'Failed to load transaction data. Please try again.';
+
         }
+
         this.cdr.detectChanges();
+
       }
+
     });
+
   }
 
-loadChartData() {
-  this.isLoadingChart = true;
-  this.cdr.detectChanges();
+  loadChartData() {
 
-  this.api.getDashboard().subscribe({
-    next: (res: any) => {
+    this.isLoadingChart = true;
 
-      this.isLoadingChart = false;
+    this.cdr.detectChanges();
 
-      if (res && res.dashboard) {
+    this.api.getDashboard().subscribe({
 
-        const expenses =
-          res.dashboard.recentTransactions.filter(
-            (t: any) => t.type === 'Expense'
-          );
+      next: (res: any) => {
 
-        const categoryMap = new Map<string, number>();
+        this.isLoadingChart = false;
 
-        expenses.forEach((t: any) => {
+        if (res && res.dashboard) {
 
-          const amount = Number(t.amount) || 0;
+          const expenses =
+            res.dashboard.recentTransactions.filter(
+              (t: any) => t.type === 'Expense'
+            );
 
-          const current =
-            categoryMap.get(t.category) || 0;
+          const categoryMap =
+            new Map<string, number>();
 
-          categoryMap.set(
-            t.category,
-            current + amount
-          );
+          expenses.forEach((t: any) => {
 
-        });
+            const amount =
+              Number(t.amount) || 0;
 
-        this.expenseCategories =
-          Array.from(categoryMap.entries()).map(
-            ([category, amount]) => ({
-              category,
-              amount
-            })
-          );
+            const current =
+              categoryMap.get(t.category) || 0;
+
+            categoryMap.set(
+              t.category,
+              current + amount
+            );
+
+          });
+
+          this.expenseCategories =
+            Array.from(
+              categoryMap.entries()
+            ).map(
+              ([category, amount]) => ({
+                category,
+                amount
+              })
+            );
+
+          this.cdr.detectChanges();
+
+          setTimeout(() => {
+
+            this.renderSpendingChart();
+
+          }, 100);
+
+        }
 
         this.cdr.detectChanges();
 
-        setTimeout(() => {
-          this.renderSpendingChart();
-        }, 100);
+      },
+
+      error: (err: any) => {
+
+        this.isLoadingChart = false;
+
+        console.error(
+          'Error loading chart data:',
+          err
+        );
+
+        this.cdr.detectChanges();
 
       }
 
-      this.cdr.detectChanges();
+    });
 
-    },
+  }
 
-    error: (err: any) => {
+  renderSpendingChart() {
 
-      this.isLoadingChart = false;
+    const canvas =
+      document.getElementById(
+        'spendingChart'
+      ) as HTMLCanvasElement;
 
-      console.error(
-        'Error loading chart data:',
-        err
+    if (!canvas) {
+
+      console.warn(
+        'Spending chart canvas not found'
       );
 
-      this.cdr.detectChanges();
-
-    }
-  });
-}
-  renderSpendingChart() {
-    const canvas = document.getElementById('spendingChart') as HTMLCanvasElement;
-    if (!canvas) {
-      console.warn('Spending chart canvas not found');
       return;
+
     }
 
     if (this.spendingChart) {
       this.spendingChart.destroy();
     }
 
-    const categories = this.expenseCategories.map(e => e.category);
-    const amounts = this.expenseCategories.map(e => e.amount);
-    const total = amounts.reduce((a, b) => a + b, 0);
+    const categories =
+      this.expenseCategories.map(
+        e => e.category
+      );
+
+    const amounts =
+      this.expenseCategories.map(
+        e => e.amount
+      );
+
+    const total =
+      amounts.reduce(
+        (a, b) => a + b,
+        0
+      );
 
     if (total === 0) {
-      console.log('No expense data to render spending chart');
+
+      console.log(
+        'No expense data to render spending chart'
+      );
+
       return;
+
     }
 
     const colors = [
-      '#6366f1', '#a855f7', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'
+      '#6366f1',
+      '#a855f7',
+      '#06b6d4',
+      '#10b981',
+      '#f59e0b',
+      '#ef4444'
     ];
 
-    this.spendingChart = new Chart(canvas, {
-      type: 'doughnut',
-      data: {
-        labels: categories.map((cat, i) => `${cat} (${((amounts[i] / total) * 100).toFixed(1)}%)`),
-        datasets: [{
-          data: amounts,
-          backgroundColor: colors.slice(0, categories.length),
-          borderWidth: 1,
-          borderColor: 'rgba(255, 255, 255, 0.1)',
-          hoverOffset: 10
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: '#94a3b8',
-              font: {
-                family: 'Plus Jakarta Sans',
-                size: 12,
-                weight: 500
-              },
-              padding: 20
-            }
-          },
-          tooltip: {
-            enabled: total > 0,
-            backgroundColor: '#0c101b',
-            titleColor: '#fff',
-            bodyColor: '#94a3b8',
-            borderColor: 'rgba(255, 255, 255, 0.1)',
+    this.spendingChart =
+      new Chart(canvas, {
+
+        type: 'doughnut',
+
+        data: {
+
+          labels:
+            categories.map(
+              (cat, i) =>
+                `${cat} (${((amounts[i] / total) * 100).toFixed(1)}%)`
+            ),
+
+          datasets: [{
+
+            data: amounts,
+
+            backgroundColor:
+              colors.slice(
+                0,
+                categories.length
+              ),
+
             borderWidth: 1,
-            padding: 12,
-            callbacks: {
-              label: (context: any) => {
-                const val = context.raw as number;
-                const pct = ((val / total) * 100).toFixed(1);
-                return ` ₹${val.toLocaleString('en-IN')} (${pct}%)`;
-              }
-            }
-          }
+
+            borderColor:
+              'rgba(255, 255, 255, 0.1)',
+
+            hoverOffset: 10
+
+          }]
+
         },
-        cutout: '75%'
-      }
-    });
+
+        options: {
+
+          responsive: true,
+
+          maintainAspectRatio: false,
+
+          plugins: {
+
+            legend: {
+
+              position: 'bottom',
+
+              labels: {
+
+                color: '#94a3b8',
+
+                font: {
+
+                  family:
+                    'Plus Jakarta Sans',
+
+                  size: 12,
+
+                  weight: 500
+
+                },
+
+                padding: 20
+
+              }
+
+            },
+
+            tooltip: {
+
+              enabled: total > 0,
+
+              backgroundColor: '#0c101b',
+
+              titleColor: '#fff',
+
+              bodyColor: '#94a3b8',
+
+              borderColor:
+                'rgba(255, 255, 255, 0.1)',
+
+              borderWidth: 1,
+
+              padding: 12,
+
+              callbacks: {
+
+                label: (context: any) => {
+
+                  const val =
+                    context.raw as number;
+
+                  const pct =
+                    ((val / total) * 100)
+                      .toFixed(1);
+
+                  return ` ₹${val.toLocaleString('en-IN')} (${pct}%)`;
+
+                }
+
+              }
+
+            }
+
+          },
+
+          cutout: '75%'
+
+        }
+
+      });
+
   }
 
   renderIncomeExpenseChart() {
-    const canvas = document.getElementById('incomeExpenseChart') as HTMLCanvasElement;
+
+    const canvas =
+      document.getElementById(
+        'incomeExpenseChart'
+      ) as HTMLCanvasElement;
+
     if (!canvas) {
-      console.warn('Income vs Expense canvas not found');
+
+      console.warn(
+        'Income vs Expense canvas not found'
+      );
+
       return;
+
     }
 
     if (this.incomeExpenseChart) {
       this.incomeExpenseChart.destroy();
     }
 
-    this.incomeExpenseChart = new Chart(canvas, {
-      type: 'bar',
-      data: {
-        labels: ['Income', 'Expense'],
-        datasets: [
-          {
-            label: 'Amount (₹)',
-            data: [this.totalIncome, this.totalExpense],
-            backgroundColor: ['#10b981', '#ef4444'],
-            borderColor: ['#10b981', '#ef4444'],
-            borderWidth: 1,
-            borderRadius: 8
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(255, 255, 255, 0.05)'
-            },
-            ticks: {
-              color: '#94a3b8',
-              callback: function(value: any) {
-                return '₹' + Number(value).toLocaleString('en-IN');
-              }
+    this.incomeExpenseChart =
+      new Chart(canvas, {
+
+        type: 'bar',
+
+        data: {
+
+          labels: [
+            'Income',
+            'Expense'
+          ],
+
+          datasets: [
+
+            {
+
+              label: 'Amount (₹)',
+
+              data: [
+                this.totalIncome,
+                this.totalExpense
+              ],
+
+              backgroundColor: [
+                '#10b981',
+                '#ef4444'
+              ],
+
+              borderColor: [
+                '#10b981',
+                '#ef4444'
+              ],
+
+              borderWidth: 1,
+
+              borderRadius: 8
+
             }
-          },
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              color: '#cbd5e1',
-              font: {
-                weight: 600
-              }
-            }
-          }
+
+          ]
+
         },
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: '#0c101b',
-            titleColor: '#fff',
-            bodyColor: '#94a3b8',
-            borderColor: 'rgba(255, 255, 255, 0.1)',
-            borderWidth: 1,
-            padding: 12,
-            callbacks: {
-              label: (context: any) => {
-                const val = context.raw as number;
-                return ` ₹${val.toLocaleString('en-IN')}`;
+
+        options: {
+
+          responsive: true,
+
+          maintainAspectRatio: false,
+
+          scales: {
+
+            y: {
+
+              beginAtZero: true,
+
+              grid: {
+
+                color:
+                  'rgba(255, 255, 255, 0.05)'
+
+              },
+
+              ticks: {
+
+                color: '#94a3b8',
+
+                callback:
+                  function(value: any) {
+
+                    return '₹' +
+                      Number(value)
+                        .toLocaleString(
+                          'en-IN'
+                        );
+
+                  }
+
               }
+
+            },
+
+            x: {
+
+              grid: {
+
+                display: false
+
+              },
+
+              ticks: {
+
+                color: '#cbd5e1',
+
+                font: {
+
+                  weight: 600
+
+                }
+
+              }
+
             }
+
+          },
+
+          plugins: {
+
+            legend: {
+
+              display: false
+
+            },
+
+            tooltip: {
+
+              backgroundColor: '#0c101b',
+
+              titleColor: '#fff',
+
+              bodyColor: '#94a3b8',
+
+              borderColor:
+                'rgba(255, 255, 255, 0.1)',
+
+              borderWidth: 1,
+
+              padding: 12,
+
+              callbacks: {
+
+                label:
+                  (context: any) => {
+
+                    const val =
+                      context.raw as number;
+
+                    return ` ₹${val.toLocaleString('en-IN')}`;
+
+                  }
+
+              }
+
+            }
+
           }
+
         }
-      }
-    });
+
+      });
+
   }
 
   calculateMetrics() {
+
     let income = 0;
     let expense = 0;
+
     this.transactions.forEach(t => {
-      const amt = Number(t.amount) || 0;
+
+      const amt =
+        Number(t.amount) || 0;
+
       if (t.type === 'Income') {
+
         income += amt;
+
       } else if (t.type === 'Expense') {
+
         expense += amt;
+
       }
+
     });
+
     this.totalIncome = income;
     this.totalExpense = expense;
     this.savings = income - expense;
+
   }
 
   formatCurrency(amount: number): string {
-    return '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    return '₹' +
+      amount.toLocaleString(
+        'en-IN',
+        {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }
+      );
+
   }
 
   goIncome() {
-    this.router.navigate(['/income']);
+
+    this.router.navigate([
+      '/income'
+    ]);
+
   }
 
   goExpense() {
-    this.router.navigate(['/expense']);
+
+    this.router.navigate([
+      '/expense'
+    ]);
+
   }
 
   goTransactions() {
-    this.router.navigate(['/transactions']);
+
+    this.router.navigate([
+      '/transactions'
+    ]);
+
   }
 
   logout() {
-    if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.removeItem === 'function') {
+
+    if (
+      typeof window !== 'undefined' &&
+      window.localStorage &&
+      typeof window.localStorage.removeItem === 'function'
+    ) {
+
       window.localStorage.removeItem('user');
       window.localStorage.removeItem('accessToken');
+
     }
+
     this.router.navigate(['/']);
+
   }
+
 }

@@ -41,12 +41,25 @@ model report {
 }
 
 model taxestimate {
-  id           Int    @id @default(autoincrement())
-  annualIncome Float
-  quarter      String
-  estimatedTax Float
-  userId       Int
-  user         user   @relation(fields: [userId], references: [id], map: "TaxEstimate_userId_fkey")
+  id                      Int     @id @default(autoincrement())
+  country                 String
+  region                  String
+  taxYear                 String
+  taxRegime               String
+  filingStatus            String
+  quarter                 String
+  annualIncome            Float
+  grossIncome             Float
+  businessExpenses        Float   @default(0)
+  retirementContributions Float   @default(0)
+  healthInsurance         Float   @default(0)
+  homeOffice              Float   @default(0)
+  taxableIncome           Float
+  estimatedTax            Float
+  effectiveTaxRate        Float
+  userId                  Int
+
+  user user @relation(fields: [userId], references: [id], map: "TaxEstimate_userId_fkey")
 
   @@index([userId], map: "TaxEstimate_userId_fkey")
 }
