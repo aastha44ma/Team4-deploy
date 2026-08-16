@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
+  calculateTaxOnly,
   createTaxEstimate,
   getAllTaxEstimates,
   getTaxEstimateById,
@@ -11,7 +12,10 @@ const {
 
 const authMiddleware = require("../middleware/auth.middleware");
 
-// Create & Calculate Tax
+// Calculate Tax - does not save
+router.post("/calculate", authMiddleware, calculateTaxOnly);
+
+// Create & Save Tax Estimate
 router.post("/", authMiddleware, createTaxEstimate);
 
 // Get All Tax Records

@@ -2,16 +2,28 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface TaxDeductions {
+  businessExpenses: number;
+  retirementContributions: number;
+  healthInsurance: number;
+  homeOffice: number;
+}
+
 export interface TaxCalculationData {
   country: string;
   region: string;
   taxYear: string;
   taxRegime: string;
-  taxableIncome: number;
-
-  // Backend-required fields
-  annualIncome: number;
+  filingStatus: string;
   quarter: string;
+
+  annualIncome: number;
+  annualGrossIncome: number;
+  grossIncome: number;
+
+  deductions: TaxDeductions;
+
+  taxableIncome: number;
 }
 
 export interface TaxSlab {
@@ -20,12 +32,10 @@ export interface TaxSlab {
 }
 
 export interface TaxCalculationResult {
-  // legacy/compact fields
   totalTax: number;
   totalIncomeAfterTax: number;
   slabs: TaxSlab[];
 
-  // fields referenced by the template
   taxRegimeLabel: string;
   taxYear: string;
   taxableIncome: number;
@@ -41,16 +51,30 @@ export interface TaxCalculationResult {
 }
 
 export interface TaxEstimate {
+  id?: number;
   _id: string;
-  // keep nested forms if API returns them
+
   data?: TaxCalculationData;
   result?: TaxCalculationResult;
 
-  // flat fields used by the template
   country: string;
   region?: string;
   taxYear: string;
   taxRegime: string;
+  filingStatus?: string;
+  quarter?: string;
+
+  annualIncome: number;
+  annualGrossIncome?: number;
+  grossIncome: number;
+
+  businessExpenses?: number;
+  retirementContributions?: number;
+  healthInsurance?: number;
+  homeOffice?: number;
+
+  deductions?: TaxDeductions;
+
   taxableIncome: number;
   estimatedTax: number;
   effectiveTaxRate: number;
@@ -64,59 +88,76 @@ export interface TaxEstimate {
 export class TaxService {
   private baseUrl = 'http://localhost:5000/api';
 
- constructor(
-  private http: HttpClient
-) {}
+  constructor(
+    private http: HttpClient
+  ) {}
 
-private getOptions() {
-  const token =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('accessToken')
-      : null;
+  private getOptions() {
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('accessToken')
+        : null;
 
-  let headers = new HttpHeaders();
+    let headers = new HttpHeaders();
 
-  if (token) {
-    headers = headers.set(
-      'Authorization',
-      `Bearer ${token}`
+    if (token) {
+      headers = headers.set(
+        'Authorization',
+        `Bearer ${token}`
+      );
+    }
+
+    return {
+      headers,
+      withCredentials: true
+    };
+  }
+
+  calculateTax(
+    data: TaxCalculationData
+  ): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}/tax-estimates`,
+      data,
+      this.getOptions()
     );
   }
 
-  return {
-    headers,
-    withCredentials: true
-  };
-}
+  saveTaxEstimate(
+    data: TaxCalculationData
+  ): Observable<{
+    message: string;
+    taxEstimate: TaxEstimate;
+  }> {
+    return this.http.post<{
+      message: string;
+      taxEstimate: TaxEstimate;
+    }>(
+      `${this.baseUrl}/tax-estimates`,
+      data,
+      this.getOptions()
+    );
+  }
 
-calculateTax(data: TaxCalculationData): Observable<any> {
-  return this.http.post(
-    `${this.baseUrl}/tax-estimates`,
-    data,
-    this.getOptions()
-  );
-}
+  getTaxEstimates(): Observable<{
+    taxEstimates: TaxEstimate[];
+  }> {
+    return this.http.get<{
+      taxEstimates: TaxEstimate[];
+    }>(
+      `${this.baseUrl}/tax-estimates`,
+      this.getOptions()
+    );
+  }
 
-saveTaxEstimate(data: TaxCalculationData): Observable<{message: string; taxEstimate: TaxEstimate}> {
-  return this.http.post<{message: string; taxEstimate: TaxEstimate}>(
-    `${this.baseUrl}/tax-estimates`,
-    data,
-    this.getOptions()
-  );
-}
-
-getTaxEstimates(): Observable<{taxEstimates: TaxEstimate[]}> {
-  return this.http.get<{taxEstimates: TaxEstimate[]}>(
-    `${this.baseUrl}/tax-estimates`,
-    this.getOptions()
-  );
-}
-
-deleteTaxEstimate(id: string): Observable<{message: string}> {
-  return this.http.delete<{message: string}>(
-    `${this.baseUrl}/tax-estimates/${id}`,
-    this.getOptions()
-  );
-}
-
+  deleteTaxEstimate(
+    id: string
+  ): Observable<{ message: string }> {
+    return this.http.delete<{
+      message: string;
+    }>(
+      `${this.baseUrl}/tax-estimates/${id}`,
+      this.getOptions()
+    );
+  }
 }

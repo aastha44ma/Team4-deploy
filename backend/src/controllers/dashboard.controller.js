@@ -53,7 +53,7 @@ const getDashboard = async (req, res) => {
     });
 
     // Latest Tax
-    const latestTax = await prisma.taxEstimate.findFirst({
+    const latestTax = await prisma.taxestimate.findFirst({
       where: {
         userId,
       },
