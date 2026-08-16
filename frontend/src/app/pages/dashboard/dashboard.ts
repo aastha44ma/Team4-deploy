@@ -1,12 +1,13 @@
 import { ChangeDetectorRef, Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api';
 import { Chart } from 'chart.js/auto';
+import { Sidebar } from '../../components/sidebar/sidebar';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, CommonModule],
+  imports: [CommonModule, Sidebar],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })

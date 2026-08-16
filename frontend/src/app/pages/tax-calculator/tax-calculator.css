@@ -2,7 +2,14 @@
   display: block;
 }
 
+.tax-calculator-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f6f8fb;
+}
+
 .tax-page {
+  flex: 1;
   min-height: 100%;
   padding: 32px;
   background: #f6f8fb;
@@ -81,10 +88,21 @@
   gap: 7px;
 }
 
+.full-width {
+  grid-column: 1 / -1;
+}
+
 .form-group label {
   color: #344054;
   font-size: 14px;
   font-weight: 600;
+}
+
+.form-group .section-label {
+  font-size: 16px;
+  color: #172033;
+  margin-bottom: 8px;
+  display: block;
 }
 
 .form-group input,
@@ -101,19 +119,38 @@
   outline: none;
 }
 
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.currency-icon {
+  position: absolute;
+  left: 12px;
+  color: #667085;
+  font-size: 14px;
+}
+
+.input-with-icon input {
+  padding-left: 28px;
+}
+
 .form-group input:focus,
 .form-group select:focus {
   border-color: #667085;
   box-shadow: 0 0 0 3px rgba(102, 112, 133, 0.12);
 }
 
-.income-group {
-  grid-column: 1 / -1;
-}
-
 .validation-error {
   color: #b42318;
   font-size: 12px;
+}
+
+.form-actions.right-align {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
 }
 
 .primary-button,
@@ -131,8 +168,12 @@
   align-self: flex-start;
   min-width: 150px;
   padding: 11px 18px;
-  background: #172033;
+  background: #2563eb;
   color: #ffffff;
+}
+
+.primary-button:hover {
+  background: #1d4ed8;
 }
 
 .save-button {
@@ -179,7 +220,7 @@
 
 .result-summary {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 16px;
   margin-bottom: 26px;
 }
@@ -244,6 +285,75 @@
   color: #344054;
 }
 
+.calendar-card {
+  margin-top: 24px;
+}
+
+.calendar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.month-header {
+  margin: 16px 0 8px;
+  color: #344054;
+  font-size: 16px;
+}
+
+.calendar-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.calendar-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calendar-item-info h4 {
+  margin: 0;
+  color: #172033;
+  font-size: 15px;
+}
+
+.calendar-item-info .date {
+  color: #667085;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.calendar-item-info .description {
+  margin: 4px 0 0;
+  color: #98a2b3;
+  font-size: 13px;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.badge-reminder {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.badge-payment {
+  background: #fef9c3;
+  color: #ca8a04;
+}
+
 .history-card {
   margin-bottom: 24px;
 }
@@ -296,7 +406,7 @@
 
 .estimate-values {
   display: grid;
-  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 20px;
 }
 
@@ -335,10 +445,6 @@
   .form-grid,
   .result-summary {
     grid-template-columns: 1fr;
-  }
-
-  .income-group {
-    grid-column: auto;
   }
 
   .result-heading,

@@ -1,8 +1,9 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api';
 import { CommonModule } from '@angular/common';
+import { Sidebar } from '../../components/sidebar/sidebar';
 
 @Component({
   selector: 'app-budgets',
@@ -10,7 +11,7 @@ import { CommonModule } from '@angular/common';
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink
+    Sidebar
   ],
   templateUrl: './budgets.html',
   styleUrls: ['./budgets.css']

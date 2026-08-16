@@ -1,15 +1,16 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api';
+import { Sidebar } from '../../components/sidebar/sidebar';
 
 @Component({
   selector: 'app-profile',
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink
+    Sidebar
   ],
   templateUrl: './profile.html',
   styleUrl: './profile.css'
