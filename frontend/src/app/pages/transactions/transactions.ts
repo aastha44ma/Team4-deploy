@@ -29,21 +29,10 @@ export class Transactions implements OnInit {
   isOtherCategory = false;
 
   category = '';
-incomeCategories: string[] = [
-  'Salary',
-  'Freelancing',
-  'Consulting',
-  'Other'
-];
+  incomeCategories: string[] = [];
 
-expenseCategories: string[] = [
-  'Office Supplies',
-  'Software & SaaS',
-  'Travel & Transportation',
-  'Other'
-];
-// incomeCategories: string[] = [];
-// expenseCategories: string[] = [];
+  expenseCategories: string[] = [];
+
 
   amount: number | null = null;
   transactionDate = '';
@@ -90,7 +79,7 @@ expenseCategories: string[] = [
     this.transactionDate = new Date().toISOString().split('T')[0];
 
     this.loadCategories();
-this.loadTransactions();
+    this.loadTransactions();
   }
 
   toggleTheme() {
@@ -105,81 +94,86 @@ this.loadTransactions();
       localStorage.setItem('theme', 'dark');
     }
   }
-loadCategories() {
+  loadCategories() {
 
-  console.log('🔍 Loading categories for Transactions...');
+    console.log('🔍 Loading categories for Transactions...');
 
-  this.api.getCategories().subscribe({
+    this.api.getCategories().subscribe({
 
-    next: (res: any) => {
+      next: (res: any) => {
 
-      console.log('🔍 CATEGORY API RESPONSE:', res);
+        console.log('🔍 CATEGORY API RESPONSE:', res);
 
-      if (!res || !Array.isArray(res.categories)) {
-        console.warn('⚠️ Invalid category response. Keeping hardcoded categories.');
-        return;
+        if (!res || !Array.isArray(res.categories)) {
+
+          console.warn('⚠️ Invalid category response.');
+
+          this.incomeCategories = [];
+          this.expenseCategories = [];
+
+          return;
+        }
+
+        // Load ONLY backend income categories
+        this.incomeCategories = res.categories
+          .filter(
+            (cat: any) =>
+              String(cat.type).trim().toLowerCase() === 'income'
+          )
+          .map(
+            (cat: any) =>
+              String(cat.name).trim()
+          )
+          .filter(
+            (name: string) =>
+              name.length > 0
+          );
+
+        // Load ONLY backend expense categories
+        this.expenseCategories = res.categories
+          .filter(
+            (cat: any) =>
+              String(cat.type).trim().toLowerCase() === 'expense'
+          )
+          .map(
+            (cat: any) =>
+              String(cat.name).trim()
+          )
+          .filter(
+            (name: string) =>
+              name.length > 0
+          );
+
+        console.log(
+          '✅ INCOME CATEGORIES:',
+          this.incomeCategories
+        );
+
+        console.log(
+          '✅ EXPENSE CATEGORIES:',
+          this.expenseCategories
+        );
+
+        this.cdr.detectChanges();
+
+      },
+
+      error: (err: any) => {
+
+        console.error(
+          '❌ CATEGORY API ERROR:',
+          err
+        );
+
+        // No hardcoded fallback
+        this.incomeCategories = [];
+        this.expenseCategories = [];
+
       }
 
-      const apiIncomeCategories = res.categories
-        .filter(
-          (cat: any) =>
-            String(cat.type).toLowerCase() === 'income'
-        )
-        .map(
-          (cat: any) => cat.name
-        );
+    });
 
-      const apiExpenseCategories = res.categories
-        .filter(
-          (cat: any) =>
-            String(cat.type).toLowerCase() === 'expense'
-        )
-        .map(
-          (cat: any) => cat.name
-        );
-
-      // Keep hardcoded + add API categories
-      this.incomeCategories = [
-        ...new Set([
-          ...this.incomeCategories,
-          ...apiIncomeCategories
-        ])
-      ];
-
-      this.expenseCategories = [
-        ...new Set([
-          ...this.expenseCategories,
-          ...apiExpenseCategories
-        ])
-      ];
-
-      console.log(
-        '🔍 FINAL INCOME CATEGORIES:',
-        this.incomeCategories
-      );
-
-      console.log(
-        '🔍 FINAL EXPENSE CATEGORIES:',
-        this.expenseCategories
-      );
-
-      this.cdr.detectChanges();
-
-    },
-
-    error: (err: any) => {
-
-      console.error(
-        '❌ CATEGORY API ERROR:',
-        err
-      );
-
-      // Hardcoded categories remain available
-    }
-
-  });
-
-}
+  }
 
   loadTransactions() {
 
@@ -189,20 +183,20 @@ loadCategories() {
 
     this.api.getTransactions().subscribe({
 
-    next: (res: any) => {
+      next: (res: any) => {
 
-  console.log("API DATA", res);
+        console.log("API DATA", res);
 
-  this.transactions = [...(res.transactions || [])];
+        this.transactions = [...(res.transactions || [])];
 
-  this.isLoading = false;
+        this.isLoading = false;
 
-  console.log("FINAL ARRAY", this.transactions);
-  console.log("LENGTH", this.transactions.length);
+        console.log("FINAL ARRAY", this.transactions);
+        console.log("LENGTH", this.transactions.length);
 
-  this.cdr.detectChanges();
+        this.cdr.detectChanges();
 
-},
+      },
 
       error: (err) => {
 
