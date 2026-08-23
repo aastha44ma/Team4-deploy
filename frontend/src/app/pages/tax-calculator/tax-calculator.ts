@@ -74,6 +74,15 @@ export class TaxCalculator implements OnInit, OnDestroy {
 
   taxEstimates: TaxEstimateViewModel[] = [];
 
+  taxCalendarYear = '';
+
+  taxCalendar: Array<{
+  quarter: string;
+  title: string;
+  dueDate: string;
+  percentage: number;
+}> = [];
+
   readonly countries = [
     'India',
     'United States',
@@ -359,6 +368,8 @@ export class TaxCalculator implements OnInit, OnDestroy {
 
     this.loadTaxEstimates();
 
+    this.loadTaxCalendar();
+
     this.countrySubscription =
       this.taxForm
         .get('country')
@@ -383,6 +394,8 @@ export class TaxCalculator implements OnInit, OnDestroy {
       this.countrySubscription.unsubscribe();
     }
   }
+
+  
 
   // ==============================
   // Tax Regime
@@ -625,6 +638,18 @@ export class TaxCalculator implements OnInit, OnDestroy {
         }
       });
   }
+
+
+loadTaxCalendar(): void {
+  this.taxService
+    .getTaxCalendar()
+    .subscribe({
+      next: response => {
+        this.taxCalendarYear = response.taxYear;
+        this.taxCalendar = response.calendar;
+      }
+    });
+}
 
   // ==============================
   // Delete Estimate

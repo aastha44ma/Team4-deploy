@@ -242,33 +242,68 @@
       </div>
     </section>
 
-    <section *ngIf="calculationResult && calculationResult.advanceTaxDueDates" class="tax-card calendar-card">
-      <h2>Tax Calendar</h2>
-      
-      <div class="calendar-list">
-        <ng-container *ngFor="let date of calculationResult.advanceTaxDueDates">
-          <h3 class="month-header">{{ getMonthName(date.month) }} 2025</h3>
-          
-          <div class="calendar-item">
-            <div class="calendar-item-info">
-              <h4>Reminder: {{ date.label }}</h4>
-              <span class="date">{{ getMonthName(date.month) }} 1, 2025</span>
-              <p class="description">Reminder for upcoming {{ date.label | lowercase }} due on {{ getMonthName(date.month) }} {{ date.day }}, 2025</p>
-            </div>
-            <span class="badge badge-reminder">reminder</span>
-          </div>
+    <section *ngIf="taxCalendar.length > 0" class="tax-card calendar-card">
+  <h2>Tax Calendar</h2>
 
-          <div class="calendar-item">
-            <div class="calendar-item-info">
-              <h4>{{ date.label }}</h4>
-              <span class="date">{{ getMonthName(date.month) }} {{ date.day }}, 2025</span>
-              <p class="description">{{ date.label | lowercase }} due - <strong>{{ currentCurrency }}{{ (calculationResult.estimatedTax * ((date.percentage || 25) / 100)) | number:'1.2-2' }}</strong></p>
-            </div>
-            <span class="badge badge-payment">payment</span>
-          </div>
-        </ng-container>
+  <div class="calendar-list">
+    <ng-container *ngFor="let date of taxCalendar">
+
+      <h3 class="month-header">
+        {{ date.dueDate | date:'MMMM' }} {{ taxCalendarYear }}
+      </h3>
+
+      <div class="calendar-item">
+        <div class="calendar-item-info">
+          <h4>Reminder: {{ date.title }}</h4>
+
+          <span class="date">
+            {{ date.dueDate | date:'MMMM d, y' }}
+          </span>
+
+          <p class="description">
+            Reminder for upcoming
+            {{ date.title | lowercase }}
+            due on
+            {{ date.dueDate | date:'MMMM d, y' }}
+          </p>
+        </div>
+
+        <span class="badge badge-reminder">
+          reminder
+        </span>
       </div>
-    </section>
+
+      <div class="calendar-item">
+        <div class="calendar-item-info">
+
+          <h4>{{ date.title }}</h4>
+
+          <span class="date">
+            {{ date.dueDate | date:'MMMM d, y' }}
+          </span>
+
+          <p class="description">
+            {{ date.title | lowercase }} due
+            <strong>
+              {{ currentCurrency }}
+              {{
+                (calculationResult?.estimatedTax || 0)
+                * ((date.percentage || 25) / 100)
+                | number:'1.2-2'
+              }}
+            </strong>
+          </p>
+
+        </div>
+
+        <span class="badge badge-payment">
+          payment
+        </span>
+      </div>
+
+    </ng-container>
+  </div>
+</section>
 
     </div>
 
