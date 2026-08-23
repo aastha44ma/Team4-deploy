@@ -113,16 +113,28 @@ export class TaxService {
     };
   }
 
+  // Calculate Tax ONLY.
+  // This endpoint does NOT save anything to the database.
   calculateTax(
     data: TaxCalculationData
-  ): Observable<any> {
-    return this.http.post(
-      `${this.baseUrl}/tax-estimates`,
+  ): Observable<TaxCalculationResult & {
+    success: boolean;
+    message: string;
+  }> {
+    return this.http.post<
+      TaxCalculationResult & {
+        success: boolean;
+        message: string;
+      }
+    >(
+      `${this.baseUrl}/tax-estimates/calculate`,
       data,
       this.getOptions()
     );
   }
 
+  // Save Tax Estimate.
+  // This endpoint creates a database record.
   saveTaxEstimate(
     data: TaxCalculationData
   ): Observable<{
@@ -139,6 +151,7 @@ export class TaxService {
     );
   }
 
+  // Load saved Tax Estimates.
   getTaxEstimates(): Observable<{
     taxEstimates: TaxEstimate[];
   }> {
@@ -150,6 +163,33 @@ export class TaxService {
     );
   }
 
+  // Load current Tax Calendar.
+  getTaxCalendar(): Observable<{
+    success: boolean;
+    taxYear: string;
+    calendar: Array<{
+      quarter: string;
+      title: string;
+      dueDate: string;
+      percentage: number;
+    }>;
+  }> {
+    return this.http.get<{
+      success: boolean;
+      taxYear: string;
+      calendar: Array<{
+        quarter: string;
+        title: string;
+        dueDate: string;
+        percentage: number;
+      }>;
+    }>(
+      `${this.baseUrl}/tax-estimates/calendar`,
+      this.getOptions()
+    );
+  }
+
+  // Delete a saved Tax Estimate.
   deleteTaxEstimate(
     id: string
   ): Observable<{ message: string }> {
