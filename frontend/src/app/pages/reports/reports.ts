@@ -3,12 +3,13 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 
+import { Sidebar } from '../../components/sidebar/sidebar';
 import { Report, ReportService } from '../../services/reports';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, Sidebar],
   templateUrl: './reports.html',
   styleUrl: './reports.css'
 })
