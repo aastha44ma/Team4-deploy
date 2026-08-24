@@ -1,248 +1,257 @@
+<div class="reports-container">
+  <app-sidebar></app-sidebar>
 <div class="reports-page">
   <div class="page-header">
     <h1>Financial Reports</h1>
     <p>Generate and download your financial reports</p>
   </div>
 
-  <div class="message success-message" *ngIf="successMessage">
-    {{ successMessage }}
-  </div>
+  <div class="content-wrapper reports-page">
+    <div class="page-header">
+      <h1>Financial Reports</h1>
+      <p>Generate and download your financial reports</p>
+    </div>
 
-  <div class="message error-message" *ngIf="errorMessage">
-    {{ errorMessage }}
-  </div>
+    <div class="message success-message" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
 
-  <!-- Generate Report Section -->
-  <div class="reports-card generate-card">
-    <h2>Generate Report</h2>
-    <form [formGroup]="reportForm" (ngSubmit)="generateReport()" class="reports-form">
-      <div class="form-grid">
-        <div class="form-group">
-          <label for="type">Report Type</label>
-          <select id="type" formControlName="type">
-            <option *ngFor="let type of reportTypes" [value]="type">{{ type }}</option>
-          </select>
+    <div class="message error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Generate Report Section -->
+    <div class="reports-card generate-card">
+      <h2>Generate Report</h2>
+      <form [formGroup]="reportForm" (ngSubmit)="generateReport()" class="reports-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="type">Report Type</label>
+            <select id="type" formControlName="type">
+              <option *ngFor="let type of reportTypes" [value]="type">{{ type }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="period">Period</label>
+            <select id="period" formControlName="period">
+              <option *ngFor="let period of periods" [value]="period">{{ period }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="format">Format</label>
+            <select id="format" formControlName="format">
+              <option *ngFor="let format of formats" [value]="format">{{ format }}</option>
+            </select>
+          </div>
+
+          <div class="form-group" *ngIf="reportForm.get('period')?.value === 'Custom Period'">
+            <label for="customStartDate">Start Date</label>
+            <input type="date" id="customStartDate" formControlName="customStartDate">
+          </div>
+
+          <div class="form-group" *ngIf="reportForm.get('period')?.value === 'Custom Period'">
+            <label for="customEndDate">End Date</label>
+            <input type="date" id="customEndDate" formControlName="customEndDate">
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="period">Period</label>
-          <select id="period" formControlName="period">
-            <option *ngFor="let period of periods" [value]="period">{{ period }}</option>
-          </select>
+        <div class="form-actions right-align mt-4">
+          <button type="button" class="secondary-button" (click)="resetForm()">Reset</button>
+          <button type="submit" class="primary-button" [disabled]="isGenerating || reportForm.invalid">
+            {{ isGenerating ? 'Generating...' : 'Generate Report' }}
+          </button>
         </div>
+      </form>
+    </div>
 
-        <div class="form-group">
-          <label for="format">Format</label>
-          <select id="format" formControlName="format">
-            <option *ngFor="let format of formats" [value]="format">{{ format }}</option>
-          </select>
-        </div>
-
-        <div class="form-group" *ngIf="reportForm.get('period')?.value === 'Custom Period'">
-          <label for="customStartDate">Start Date</label>
-          <input type="date" id="customStartDate" formControlName="customStartDate">
-        </div>
-
-        <div class="form-group" *ngIf="reportForm.get('period')?.value === 'Custom Period'">
-          <label for="customEndDate">End Date</label>
-          <input type="date" id="customEndDate" formControlName="customEndDate">
-        </div>
-      </div>
-
-      <div class="form-actions right-align mt-4">
-        <button type="button" class="secondary-button" (click)="resetForm()">Reset</button>
-        <button type="submit" class="primary-button" [disabled]="isGenerating || reportForm.invalid">
-          {{ isGenerating ? 'Generating...' : 'Generate Report' }}
-        </button>
-      </div>
-    </form>
-  </div>
-
-  <!-- Recent Reports Section -->
-  <div class="reports-card recent-reports-card mt-4">
-    <h2>Recent Reports</h2>
-    <div *ngIf="isLoadingReports" class="loading-state">Loading reports...</div>
+    <!-- Recent Reports Section -->
+    <div class="reports-card recent-reports-card mt-4">
+      <h2>Recent Reports</h2>
+      <div *ngIf="isLoadingReports" class="loading-state">Loading reports...</div>
     
-    <div class="table-wrapper" *ngIf="!isLoadingReports && reports.length > 0">
-      <table class="reports-table">
-        <thead>
-          <tr>
-            <th>Report Name</th>
-            <th>Generated</th>
-            <th>Period</th>
-            <th>Format</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let report of reports; trackBy: trackReport" (click)="selectReport(report)" [class.selected]="selectedReport?._id === report._id">
-            <td><strong>{{ report.name }}</strong></td>
-            <td>{{ report.createdAt | date:'MMM d, y, h:mm a' }}</td>
-            <td>{{ report.period }}</td>
-            <td>{{ report.format }}</td>
-            <td>
-              <button class="delete-button small" (click)="deleteReport(report, $event)">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+      <div class="table-wrapper" *ngIf="!isLoadingReports && reports.length > 0">
+        <table class="reports-table">
+          <thead>
+            <tr>
+              <th>Report Name</th>
+              <th>Generated</th>
+              <th>Period</th>
+              <th>Format</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let report of reports; trackBy: trackReport" (click)="selectReport(report)" [class.selected]="selectedReport?._id === report._id">
+              <td><strong>{{ report.name }}</strong></td>
+              <td>{{ report.createdAt | date:'MMM d, y, h:mm a' }}</td>
+              <td>{{ report.period }}</td>
+              <td>{{ report.format }}</td>
+              <td>
+                <button class="delete-button small" (click)="deleteReport(report, $event)">Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <div class="empty-state" *ngIf="!isLoadingReports && reports.length === 0">
-      <p>No reports generated yet.</p>
-    </div>
-  </div>
-
-  <!-- Report Preview Section -->
-  <div class="reports-card preview-card mt-4">
-    <div class="preview-header">
-      <h2>Report Preview</h2>
-      <div class="preview-actions" *ngIf="selectedReport">
-        <button type="button" class="secondary-button" (click)="printReport()">Print</button>
-        <button type="button" class="primary-button" (click)="downloadReport()">Download</button>
+      <div class="empty-state" *ngIf="!isLoadingReports && reports.length === 0">
+        <p>No reports generated yet.</p>
       </div>
     </div>
 
-    <div class="empty-preview" *ngIf="!selectedReport">
-      <div class="empty-icon">📄</div>
-      <h3>Select a report to preview</h3>
-      <p>Generated reports will appear here for review before downloading</p>
-    </div>
-
-    <!-- The Actual Printable Preview Content -->
-    <div class="preview-content printable-area" *ngIf="selectedReport">
-      <div class="report-header">
-        <h1>{{ selectedReport.name }}</h1>
-        <p>Period: {{ selectedReport.period }} | Generated: {{ selectedReport.createdAt | date:'medium' }}</p>
+    <!-- Report Preview Section -->
+    <div class="reports-card preview-card mt-4">
+      <div class="preview-header">
+        <h2>Report Preview</h2>
+        <div class="preview-actions" *ngIf="selectedReport">
+          <button type="button" class="secondary-button" (click)="printReport()">Print</button>
+          <button type="button" class="primary-button" (click)="downloadReport()">Download</button>
+        </div>
       </div>
 
-      <!-- Specific Data Views based on Report Type -->
+      <div class="empty-preview" *ngIf="!selectedReport">
+        <div class="empty-icon">📄</div>
+        <h3>Select a report to preview</h3>
+        <p>Generated reports will appear here for review before downloading</p>
+      </div>
+
+      <!-- The Actual Printable Preview Content -->
+      <div class="preview-content printable-area" *ngIf="selectedReport">
+        <div class="report-header">
+          <h1>{{ selectedReport.name }}</h1>
+          <p>Period: {{ selectedReport.period }} | Generated: {{ selectedReport.createdAt | date:'medium' }}</p>
+        </div>
+
+        <!-- Specific Data Views based on Report Type -->
       
-      <!-- Income / Expense / Cash Flow Data -->
-      <div class="report-data-grid" *ngIf="selectedReport.data.totalIncome !== undefined || selectedReport.data.totalExpense !== undefined">
-        <div class="data-box" *ngIf="selectedReport.data.totalIncome !== undefined">
-          <span>Total Income</span>
-          <strong>&#8377;{{ selectedReport.data.totalIncome | number:'1.2-2' }}</strong>
+        <!-- Income / Expense / Cash Flow Data -->
+        <div class="report-data-grid" *ngIf="selectedReport.data.totalIncome !== undefined || selectedReport.data.totalExpense !== undefined">
+          <div class="data-box" *ngIf="selectedReport.data.totalIncome !== undefined">
+            <span>Total Income</span>
+            <strong>&#8377;{{ selectedReport.data.totalIncome | number:'1.2-2' }}</strong>
+          </div>
+          <div class="data-box" *ngIf="selectedReport.data.totalExpense !== undefined">
+            <span>Total Expense</span>
+            <strong>&#8377;{{ selectedReport.data.totalExpense | number:'1.2-2' }}</strong>
+          </div>
+          <div class="data-box" *ngIf="selectedReport.data.netIncome !== undefined">
+            <span>Net Income</span>
+            <strong>&#8377;{{ selectedReport.data.netIncome | number:'1.2-2' }}</strong>
+          </div>
+          <div class="data-box" *ngIf="selectedReport.data.netCashFlow !== undefined">
+            <span>Net Cash Flow</span>
+            <strong>&#8377;{{ selectedReport.data.netCashFlow | number:'1.2-2' }}</strong>
+          </div>
         </div>
-        <div class="data-box" *ngIf="selectedReport.data.totalExpense !== undefined">
-          <span>Total Expense</span>
-          <strong>&#8377;{{ selectedReport.data.totalExpense | number:'1.2-2' }}</strong>
-        </div>
-        <div class="data-box" *ngIf="selectedReport.data.netIncome !== undefined">
-          <span>Net Income</span>
-          <strong>&#8377;{{ selectedReport.data.netIncome | number:'1.2-2' }}</strong>
-        </div>
-        <div class="data-box" *ngIf="selectedReport.data.netCashFlow !== undefined">
-          <span>Net Cash Flow</span>
-          <strong>&#8377;{{ selectedReport.data.netCashFlow | number:'1.2-2' }}</strong>
-        </div>
-      </div>
 
-      <!-- Budget Report Data -->
-      <div class="report-data-grid" *ngIf="selectedReport.data.totalBudget !== undefined">
-        <div class="data-box">
-          <span>Total Budget</span>
-          <strong>&#8377;{{ selectedReport.data.totalBudget | number:'1.2-2' }}</strong>
+        <!-- Budget Report Data -->
+        <div class="report-data-grid" *ngIf="selectedReport.data.totalBudget !== undefined">
+          <div class="data-box">
+            <span>Total Budget</span>
+            <strong>&#8377;{{ selectedReport.data.totalBudget | number:'1.2-2' }}</strong>
+          </div>
+          <div class="data-box">
+            <span>Actual Spending</span>
+            <strong>&#8377;{{ selectedReport.data.totalActual | number:'1.2-2' }}</strong>
+          </div>
+          <div class="data-box">
+            <span>Remaining Amount</span>
+            <strong>&#8377;{{ selectedReport.data.remainingAmount | number:'1.2-2' }}</strong>
+          </div>
+          <div class="data-box">
+            <span>Utilization</span>
+            <strong>{{ selectedReport.data.utilization | number:'1.0-2' }}%</strong>
+          </div>
         </div>
-        <div class="data-box">
-          <span>Actual Spending</span>
-          <strong>&#8377;{{ selectedReport.data.totalActual | number:'1.2-2' }}</strong>
-        </div>
-        <div class="data-box">
-          <span>Remaining Amount</span>
-          <strong>&#8377;{{ selectedReport.data.remainingAmount | number:'1.2-2' }}</strong>
-        </div>
-        <div class="data-box">
-          <span>Utilization</span>
-          <strong>{{ selectedReport.data.utilization | number:'1.0-2' }}%</strong>
-        </div>
-      </div>
 
-      <!-- Breakdown Tables -->
-      <div class="breakdown-section" *ngIf="selectedReport.data.expenseByCategory && objectKeys(selectedReport.data.expenseByCategory).length > 0">
-        <h3>Expense Breakdown</h3>
-        <table class="report-breakdown-table">
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cat of objectKeys(selectedReport.data.expenseByCategory)">
-              <td>{{ cat }}</td>
-              <td>&#8377;{{ selectedReport.data.expenseByCategory[cat] | number:'1.2-2' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <!-- Breakdown Tables -->
+        <div class="breakdown-section" *ngIf="selectedReport.data.expenseByCategory && objectKeys(selectedReport.data.expenseByCategory).length > 0">
+          <h3>Expense Breakdown</h3>
+          <table class="report-breakdown-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cat of objectKeys(selectedReport.data.expenseByCategory)">
+                <td>{{ cat }}</td>
+                <td>&#8377;{{ selectedReport.data.expenseByCategory[cat] | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <div class="breakdown-section" *ngIf="selectedReport.data.incomeByCategory && objectKeys(selectedReport.data.incomeByCategory).length > 0">
-        <h3>Income Breakdown</h3>
-        <table class="report-breakdown-table">
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cat of objectKeys(selectedReport.data.incomeByCategory)">
-              <td>{{ cat }}</td>
-              <td>&#8377;{{ selectedReport.data.incomeByCategory[cat] | number:'1.2-2' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <div class="breakdown-section" *ngIf="selectedReport.data.incomeByCategory && objectKeys(selectedReport.data.incomeByCategory).length > 0">
+          <h3>Income Breakdown</h3>
+          <table class="report-breakdown-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cat of objectKeys(selectedReport.data.incomeByCategory)">
+                <td>{{ cat }}</td>
+                <td>&#8377;{{ selectedReport.data.incomeByCategory[cat] | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <!-- Budget Category Breakdown -->
-      <div class="breakdown-section" *ngIf="selectedReport.data.categories && objectKeys(selectedReport.data.categories).length > 0">
-        <h3>Category Budgets</h3>
-        <table class="report-breakdown-table">
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Budget</th>
-              <th>Spent</th>
-              <th>Remaining</th>
-              <th>Utilization</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let cat of objectKeys(selectedReport.data.categories)">
-              <td>{{ cat }}</td>
-              <td>&#8377;{{ selectedReport.data.categories[cat].budgetAmount | number:'1.2-2' }}</td>
-              <td>&#8377;{{ selectedReport.data.categories[cat].actualSpending | number:'1.2-2' }}</td>
-              <td>&#8377;{{ selectedReport.data.categories[cat].remaining | number:'1.2-2' }}</td>
-              <td>{{ selectedReport.data.categories[cat].utilization | number:'1.0-2' }}%</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <!-- Budget Category Breakdown -->
+        <div class="breakdown-section" *ngIf="selectedReport.data.categories && objectKeys(selectedReport.data.categories).length > 0">
+          <h3>Category Budgets</h3>
+          <table class="report-breakdown-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Budget</th>
+                <th>Spent</th>
+                <th>Remaining</th>
+                <th>Utilization</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cat of objectKeys(selectedReport.data.categories)">
+                <td>{{ cat }}</td>
+                <td>&#8377;{{ selectedReport.data.categories[cat].budgetAmount | number:'1.2-2' }}</td>
+                <td>&#8377;{{ selectedReport.data.categories[cat].actualSpending | number:'1.2-2' }}</td>
+                <td>&#8377;{{ selectedReport.data.categories[cat].remaining | number:'1.2-2' }}</td>
+                <td>{{ selectedReport.data.categories[cat].utilization | number:'1.0-2' }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       
-      <!-- Tax Summary -->
-      <div class="breakdown-section" *ngIf="selectedReport.data.taxEstimates">
-        <h3>Tax Estimates Generated</h3>
-        <table class="report-breakdown-table">
-          <thead>
-            <tr>
-              <th>Country</th>
-              <th>Taxable Income</th>
-              <th>Estimated Annual Tax</th>
-              <th>Estimated Quarterly Tax</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let tax of selectedReport.data.taxEstimates">
-              <td>{{ tax.country }} ({{ tax.taxYear }})</td>
-              <td>&#8377;{{ tax.taxableIncome | number:'1.2-2' }}</td>
-              <td>&#8377;{{ tax.estimatedAnnualTax | number:'1.2-2' }}</td>
-              <td>&#8377;{{ tax.estimatedQuarterlyTax | number:'1.2-2' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <!-- Tax Summary -->
+        <div class="breakdown-section" *ngIf="selectedReport.data.taxEstimates">
+          <h3>Tax Estimates Generated</h3>
+          <table class="report-breakdown-table">
+            <thead>
+              <tr>
+                <th>Country</th>
+                <th>Taxable Income</th>
+                <th>Estimated Annual Tax</th>
+                <th>Estimated Quarterly Tax</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let tax of selectedReport.data.taxEstimates">
+                <td>{{ tax.country }} ({{ tax.taxYear }})</td>
+                <td>&#8377;{{ tax.taxableIncome | number:'1.2-2' }}</td>
+                <td>&#8377;{{ tax.estimatedAnnualTax | number:'1.2-2' }}</td>
+                <td>&#8377;{{ tax.estimatedQuarterlyTax | number:'1.2-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
+      </div>
     </div>
   </div>
 </div>
