@@ -39,7 +39,10 @@ const calculateTax = (taxableIncome, taxRegime) => {
       });
 
       estimatedTax += taxAmount;
-      previousLimit = slab.limit;
+
+      if (slab.limit !== Infinity) {
+        previousLimit = slab.limit;
+      }
     }
   } else {
     // Old Tax Regime
@@ -70,7 +73,10 @@ const calculateTax = (taxableIncome, taxRegime) => {
       });
 
       estimatedTax += taxAmount;
-      previousLimit = slab.limit;
+
+      if (slab.limit !== Infinity) {
+        previousLimit = slab.limit;
+      }
     }
   }
 
@@ -97,17 +103,47 @@ const createTaxEstimate = async (req, res) => {
       region,
       taxYear,
       taxRegime,
+      filingStatus,
+      quarter,
+      annualIncome,
+      grossIncome,
+      annualGrossIncome,
+      deductions,
       taxableIncome
     } = req.body;
 
-    // Validate required fields
+    // Support both annualIncome and annualGrossIncome
+    const annualIncomeValue = Number(
+      annualIncome ?? annualGrossIncome
+    );
+
+    const grossIncomeValue = Number(grossIncome);
+
+    const deductionValues = {
+      businessExpenses: Number(
+        deductions?.businessExpenses ?? 0
+      ),
+      retirementContributions: Number(
+        deductions?.retirementContributions ?? 0
+      ),
+      healthInsurance: Number(
+        deductions?.healthInsurance ?? 0
+      ),
+      homeOffice: Number(
+        deductions?.homeOffice ?? 0
+      )
+    };
+
+    // ==============================
+    // Validation
+    // ==============================
     if (
       !country ||
       !region ||
       !taxYear ||
       !taxRegime ||
-      taxableIncome === undefined ||
-      taxableIncome === null
+      !filingStatus ||
+      !quarter
     ) {
       return res.status(400).json({
         success: false,
@@ -115,40 +151,95 @@ const createTaxEstimate = async (req, res) => {
       });
     }
 
-    // Validate taxable income
-    const income = Number(taxableIncome);
+    if (
+      !Number.isFinite(annualIncomeValue) ||
+      annualIncomeValue < 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Annual income must be a valid non-negative number"
+      });
+    }
 
     if (
-      !Number.isFinite(income) ||
-      income < 0
+      !Number.isFinite(grossIncomeValue) ||
+      grossIncomeValue < 0
     ) {
+      return res.status(400).json({
+        success: false,
+        message: "Quarterly gross income must be a valid non-negative number"
+      });
+    }
+
+    if (annualIncomeValue < grossIncomeValue) {
+      return res.status(400).json({
+        success: false,
+        message: "Annual Gross Income cannot be less than Quarterly Gross Income"
+      });
+    }
+
+    if (!["new", "old"].includes(taxRegime)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid tax regime. Use new or old."
+      });
+    }
+
+    const calculatedTaxableIncome = Math.max(
+      0,
+      annualIncomeValue -
+        deductionValues.businessExpenses -
+        deductionValues.retirementContributions -
+        deductionValues.healthInsurance -
+        deductionValues.homeOffice
+    );
+
+    const income =
+      taxableIncome !== undefined && taxableIncome !== null
+        ? Number(taxableIncome)
+        : calculatedTaxableIncome;
+
+    if (!Number.isFinite(income) || income < 0) {
       return res.status(400).json({
         success: false,
         message: "Taxable income must be a valid non-negative number"
       });
     }
 
-    // Validate tax regime
-    if (!["new", "old"].includes(taxRegime)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid tax regime"
-      });
-    }
-
-    // Calculate tax using existing project tax logic
+    // ==============================
+    // Calculate Tax
+    // ==============================
     const calculation = calculateTax(
       income,
       taxRegime
     );
 
-    // Save tax estimate
-    const taxEstimate = await prisma.taxEstimate.create({
+    // ==============================
+    // Save Estimate
+    // ==============================
+    const taxEstimate = await prisma.taxestimate.create({
       data: {
-        annualIncome: income,
-        quarter: taxYear,
+        country,
+        region,
+        taxYear,
+        taxRegime,
+        filingStatus,
+        quarter,
+        annualIncome: annualIncomeValue,
+        grossIncome: grossIncomeValue,
+        businessExpenses:
+          deductionValues.businessExpenses,
+        retirementContributions:
+          deductionValues.retirementContributions,
+        healthInsurance:
+          deductionValues.healthInsurance,
+        homeOffice:
+          deductionValues.homeOffice,
+        taxableIncome: income,
         estimatedTax: calculation.estimatedTax,
-        userId: req.user.userId
+        effectiveTaxRate:
+          calculation.effectiveTaxRate,
+        userId: req.user.id
       }
     });
 
@@ -164,14 +255,16 @@ const createTaxEstimate = async (req, res) => {
       taxYear,
       taxableIncome: income,
       estimatedTax: calculation.estimatedTax,
-      effectiveTaxRate: calculation.effectiveTaxRate,
-      slabBreakdown: calculation.slabBreakdown,
+      effectiveTaxRate:
+        calculation.effectiveTaxRate,
+      slabBreakdown:
+        calculation.slabBreakdown,
 
       taxEstimate
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Tax calculation error:", error);
 
     return res.status(500).json({
       success: false,
@@ -187,9 +280,9 @@ const createTaxEstimate = async (req, res) => {
 const getAllTaxEstimates = async (req, res) => {
   try {
     const taxEstimates =
-      await prisma.taxEstimate.findMany({
+      await prisma.taxestimate.findMany({
         where: {
-          userId: req.user.userId
+          userId: req.user.id
         },
         orderBy: {
           id: "desc"
@@ -203,7 +296,7 @@ const getAllTaxEstimates = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Get tax estimates error:", error);
 
     return res.status(500).json({
       success: false,
@@ -220,7 +313,6 @@ const getTaxEstimateById = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
-    // Validate ID
     if (!Number.isInteger(id) || id <= 0) {
       return res.status(400).json({
         success: false,
@@ -229,10 +321,10 @@ const getTaxEstimateById = async (req, res) => {
     }
 
     const taxEstimate =
-      await prisma.taxEstimate.findFirst({
+      await prisma.taxestimate.findFirst({
         where: {
           id,
-          userId: req.user.userId
+          userId: req.user.id
         }
       });
 
@@ -249,7 +341,7 @@ const getTaxEstimateById = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Get tax estimate error:", error);
 
     return res.status(500).json({
       success: false,
@@ -266,7 +358,6 @@ const deleteTaxEstimate = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
-    // Validate ID
     if (!Number.isInteger(id) || id <= 0) {
       return res.status(400).json({
         success: false,
@@ -275,10 +366,10 @@ const deleteTaxEstimate = async (req, res) => {
     }
 
     const taxEstimate =
-      await prisma.taxEstimate.findFirst({
+      await prisma.taxestimate.findFirst({
         where: {
           id,
-          userId: req.user.userId
+          userId: req.user.id
         }
       });
 
@@ -289,7 +380,7 @@ const deleteTaxEstimate = async (req, res) => {
       });
     }
 
-    await prisma.taxEstimate.delete({
+    await prisma.taxestimate.delete({
       where: {
         id
       }
@@ -301,7 +392,7 @@ const deleteTaxEstimate = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Delete tax estimate error:", error);
 
     return res.status(500).json({
       success: false,
@@ -314,9 +405,214 @@ const deleteTaxEstimate = async (req, res) => {
 // ==============================
 // EXPORTS
 // ==============================
+const calculateTaxOnly = async (req, res) => {
+  try {
+    const {
+      country,
+      region,
+      taxYear,
+      taxRegime,
+      filingStatus,
+      quarter,
+      annualIncome,
+      grossIncome,
+      annualGrossIncome,
+      deductions,
+      taxableIncome
+    } = req.body;
+
+    const annualIncomeValue = Number(
+      annualIncome ?? annualGrossIncome
+    );
+
+    const grossIncomeValue = Number(grossIncome);
+
+    const deductionValues = {
+      businessExpenses: Number(
+        deductions?.businessExpenses ?? 0
+      ),
+      retirementContributions: Number(
+        deductions?.retirementContributions ?? 0
+      ),
+      healthInsurance: Number(
+        deductions?.healthInsurance ?? 0
+      ),
+      homeOffice: Number(
+        deductions?.homeOffice ?? 0
+      )
+    };
+
+    if (
+      !country ||
+      !region ||
+      !taxYear ||
+      !taxRegime ||
+      !filingStatus ||
+      !quarter
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All tax calculation fields are required"
+      });
+    }
+
+    if (
+      !Number.isFinite(annualIncomeValue) ||
+      annualIncomeValue < 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Annual income must be a valid non-negative number"
+      });
+    }
+
+    if (
+      !Number.isFinite(grossIncomeValue) ||
+      grossIncomeValue < 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Quarterly gross income must be a valid non-negative number"
+      });
+    }
+
+    if (annualIncomeValue < grossIncomeValue) {
+      return res.status(400).json({
+        success: false,
+        message: "Annual Gross Income cannot be less than Quarterly Gross Income"
+      });
+    }
+
+    if (!["new", "old"].includes(taxRegime)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid tax regime. Use new or old."
+      });
+    }
+
+    const calculatedTaxableIncome = Math.max(
+      0,
+      annualIncomeValue -
+        deductionValues.businessExpenses -
+        deductionValues.retirementContributions -
+        deductionValues.healthInsurance -
+        deductionValues.homeOffice
+    );
+
+    const income =
+      taxableIncome !== undefined && taxableIncome !== null
+        ? Number(taxableIncome)
+        : calculatedTaxableIncome;
+
+    if (!Number.isFinite(income) || income < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Taxable income must be a valid non-negative number"
+      });
+    }
+
+    const calculation = calculateTax(
+      income,
+      taxRegime
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Tax calculated successfully",
+
+      taxRegimeLabel:
+        taxRegime === "new"
+          ? "New Tax Regime"
+          : "Old Tax Regime",
+
+      taxYear,
+      taxableIncome: income,
+      estimatedTax: calculation.estimatedTax,
+      effectiveTaxRate:
+        calculation.effectiveTaxRate,
+      slabBreakdown:
+        calculation.slabBreakdown
+    });
+
+  } catch (error) {
+    console.error("Tax calculation error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
+  }
+};
+
+const getTaxCalendar = async (req, res) => {
+    try {
+        const currentDate = new Date();
+
+        const currentMonth = currentDate.getMonth() + 1;
+        const currentYear = currentDate.getFullYear();
+
+        // Indian financial year:
+        // April - March
+        let startYear;
+
+        if (currentMonth >= 4) {
+            startYear = currentYear;
+        } else {
+            startYear = currentYear - 1;
+        }
+
+        const endYear = startYear + 1;
+
+        const taxYear = `${startYear}-${String(endYear).slice(-2)}`;
+
+        const calendar = [
+            {
+                quarter: "Q1",
+                title: "1st Advance Tax Installment",
+                dueDate: `${startYear}-06-15`,
+                percentage: 15,
+            },
+            {
+                quarter: "Q2",
+                title: "2nd Advance Tax Installment",
+                dueDate: `${startYear}-09-15`,
+                percentage: 45,
+            },
+            {
+                quarter: "Q3",
+                title: "3rd Advance Tax Installment",
+                dueDate: `${startYear}-12-15`,
+                percentage: 75,
+            },
+            {
+                quarter: "Q4",
+                title: "4th Advance Tax Installment",
+                dueDate: `${endYear}-03-15`,
+                percentage: 100,
+            },
+        ];
+
+        return res.status(200).json({
+            success: true,
+            taxYear,
+            calendar,
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to generate tax calendar",
+        });
+    }
+};
+
 module.exports = {
+  calculateTaxOnly,
   createTaxEstimate,
   getAllTaxEstimates,
   getTaxEstimateById,
-  deleteTaxEstimate
+  deleteTaxEstimate,
+  getTaxCalendar
 };
